@@ -48,3 +48,39 @@ test('kutuBirlestir', () => {
     kutuBirlestir([{ x: 10, y: 20, width: 30, height: 40 }, { x: 50, y: 5, width: 10, height: 10 }], 5),
     { x: 5, y: 0, width: 60, height: 65 });
 });
+
+// İl ekranı (2026-11-26)
+const { ilGezileri, ilEkraniMi, hashtenDurum, durumdanHash, projeksiyon } = require('../cekirdek.js');
+
+test('ilGezileri ve ilEkraniMi', () => {
+  assert.equal(ilGezileri(34).length, 1);
+  assert.deepEqual(ilGezileri(6), []);
+  assert.equal(ilEkraniMi({ bolge: 'marmara', plaka: 34 }), true);
+  assert.equal(ilEkraniMi({ bolge: 'marmara', plaka: 10 }), false);
+  assert.equal(ilEkraniMi(BOS), false);
+});
+
+test('sonrakiDurum: il-ac, bolgeye-don; Türkiye görünümünde İstanbul şekli Marmara\'yı açar', () => {
+  assert.deepEqual(sonrakiDurum(BOS, { tur: 'tik', plaka: 34 }), { bolge: 'marmara', plaka: null });
+  assert.deepEqual(sonrakiDurum(BOS, { tur: 'il-ac', plaka: 34 }), { bolge: 'marmara', plaka: 34 });
+  assert.deepEqual(sonrakiDurum({ bolge: 'marmara', plaka: 34 }, { tur: 'bolgeye-don' }), { bolge: 'marmara', plaka: null });
+  assert.deepEqual(sonrakiDurum(BOS, { tur: 'hash', hash: '#marmara/34' }), { bolge: 'marmara', plaka: 34 });
+});
+
+test('hashtenDurum', () => {
+  assert.deepEqual(hashtenDurum('#marmara/34'), { bolge: 'marmara', plaka: 34 });
+  assert.deepEqual(hashtenDurum('#ege'), { bolge: 'ege', plaka: null });
+  for (const h of ['#marmara/99', '#marmara/10', '#marmara/abc']) assert.deepEqual(hashtenDurum(h), { bolge: 'marmara', plaka: null }, h);
+  assert.deepEqual(hashtenDurum('#ege/34'), { bolge: 'ege', plaka: null });
+  for (const h of ['#xyz/34', '', '#']) assert.deepEqual(hashtenDurum(h), BOS, h);
+});
+
+test('durumdanHash', () => {
+  assert.equal(durumdanHash({ bolge: 'marmara', plaka: 34 }), '#marmara/34');
+  assert.equal(durumdanHash({ bolge: 'marmara', plaka: 10 }), '#marmara');
+  assert.equal(durumdanHash(BOS), '');
+});
+
+test('projeksiyon', () => {
+  assert.deepEqual(projeksiyon(41, 29, { lon0: 28, lat0: 42, kos: 0.75, olcek: 100 }), { x: 75, y: 100 });
+});

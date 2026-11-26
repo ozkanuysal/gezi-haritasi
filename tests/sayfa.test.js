@@ -141,3 +141,11 @@ test('küre: bekçi — baslat hiç çağrılmazsa ya da kare hata verirse katma
 test('küre: kutup arkasındaki dikişte mip sapması bastırılır', () => {
   assert.match(oku('kure.js'), /abs\(fark\) > 175\.0 \? -16\.0 : 0\.0/);
 });
+
+// İl ekranında sağ üstte Türkiye haritasına dönüş simgesi (2026-11-26)
+test('il ekranında harita simgesi: Türkiye görünümüne döner', () => {
+  assert.match(html, /<button id="turkiyeye-don"[^>]*aria-label="Türkiye haritasına dön"[^>]*hidden[^>]*>\s*<svg/);
+  assert.match(js, /turkiyeyeDon\.hidden = !ilde;/);
+  assert.match(js, /turkiyeyeDon\.addEventListener\('click', \(\) => uygula\(\{ tur: 'geri' \}\)\)/);
+  assert.match(css, /#turkiyeye-don \{[^}]*margin-left: auto/);
+});

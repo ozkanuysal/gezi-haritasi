@@ -121,3 +121,23 @@ test('küre katmanı, iki tuval ve betik sırası', () => {
   assert.match(js, /KURE\.baslat\(/);
   assert.match(oku('kure.js'), /'gorseller\/dunya\.jpg'/);
 });
+
+// Küre sağlamlaştırma (gözden geçirme, 2026-11-26)
+test('küre: yavaş/başarısız dokuda yumuşak çıkış, kısa bekleme, atlanınca doku yüklenmez', () => {
+  const k = oku('kure.js');
+  assert.match(k, /resim\.onload = \(\) => \{\s*if \(bitti\) return;/);
+  assert.match(k, /if \(hata\) return bitir\(true\)/);
+  assert.match(k, /> BEKLEME_MS \? bitir\(true\)/);
+  assert.match(k, /const BEKLEME_MS = 800;/);
+  assert.match(k, /yildizlariCiz\(\);\s*\n\s*\/\/ Dokular/);
+});
+
+test('küre: bekçi — baslat hiç çağrılmazsa ya da kare hata verirse katman kalkar', () => {
+  const k = oku('kure.js');
+  assert.match(k, /setTimeout\(\(\) => \{ if \(!basladi\) bitir\(true\); \}, 8000\)/);
+  assert.match(k, /catch \(e\) \{ return bitir\(true\); \}/);
+});
+
+test('küre: kutup arkasındaki dikişte mip sapması bastırılır', () => {
+  assert.match(oku('kure.js'), /abs\(fark\) > 175\.0 \? -16\.0 : 0\.0/);
+});

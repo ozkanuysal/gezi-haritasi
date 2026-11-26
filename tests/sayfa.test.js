@@ -86,3 +86,18 @@ test('başlık: Açı Schools 2026-2027 Gezi Haritası', () => {
   assert.match(html, /<h1>Açı Schools 2026-2027 Gezi Haritası<\/h1>/);
   assert.match(html, /<title>Açı Schools 2026-2027 Gezi Haritası<\/title>/);
 });
+
+// 2026-11-26: bölge görünümünde il etiketi; il ekranında büyük harita
+test('il etiketi bölge görünümünde de görünür (yalnızca o bölgenin illeri), boyu sabit', () => {
+  assert.ok(!/\.bolge-acik \.il-etiketleri \{ display: none/.test(css), 'bölge açıkken etiketler gizleniyor');
+  assert.match(js, /classList\.toggle\('gizli'/);
+  assert.match(css, /\.il-etiketi\.gizli \{ display: none/);
+  assert.match(js, /scale\(\$\{/); // yakınlaşmada ters ölçek
+});
+
+test('il ekranında harita sol tarafı kaplar: geniş sol sütun, kartın boyunca uzayan kutu', () => {
+  assert.match(css, /\.il-ekrani \{[^}]*grid-template-columns: minmax\(0, 2fr\) minmax\(320px, 1fr\)/);
+  assert.match(css, /\.il-ekrani \{[^}]*align-items: stretch/);
+  assert.match(css, /body\.il-modu main \{[^}]*max-width:/);
+  assert.match(js, /classList\.toggle\('il-modu'/);
+});

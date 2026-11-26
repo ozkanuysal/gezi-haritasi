@@ -86,19 +86,20 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
 /* Gezisi olan illerin adı (Türkiye görünümü); tıklanınca il ekranı açılır. */
 .il-etiketleri { cursor: pointer; }
-.bolge-acik .il-etiketleri { display: none; }
+.il-etiketi.gizli { display: none; }
 .il-noktasi { fill: #002d72; stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
 .il-zemin { fill: #fff; stroke: #002d72; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
 .il-adi { font-size: 12px; font-weight: 700; fill: #002d72; text-anchor: middle; }
 
 /* İl ekranı: solda ilçe haritası, sağda gezi kartları. */
 .il-ekrani {
-  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 24px; align-items: start; margin-bottom: 32px;
+  display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  gap: 24px; align-items: stretch; margin-bottom: 32px;
 }
+body.il-modu main { max-width: 1600px; } /* il ekranında harita için daha geniş sayfa */
 .il-ekrani[hidden] { display: none; }
 .il-harita-kutusu {
-  position: relative;
+  position: relative; display: flex; align-items: center;
   background: #fff; border: 1px solid var(--kenar); border-radius: 12px; padding: 8px;
 }
 .il-haritasi { display: block; width: 100%; height: auto; max-height: calc(100vh - 200px); }
@@ -178,7 +179,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   .ust h1 { font-size: 1.6rem; }
   .harita svg { aspect-ratio: 4 / 3; }
   .bolge-adi { font-size: 28px; }
-  .il-adi { font-size: 22px; }
+  .il-adi { font-size: 30px; }
 }
 
 @media (max-width: 800px) {

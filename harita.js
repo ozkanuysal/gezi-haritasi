@@ -66,6 +66,8 @@
     const grup = document.createElementNS(SVG_NS, 'g');
     grup.setAttribute('class', 'il-etiketi');
     grup.dataset.plaka = plaka;
+    grup.dataset.x = x;
+    grup.dataset.y = y;
     const nokta = document.createElementNS(SVG_NS, 'circle');
     nokta.setAttribute('class', 'il-noktasi');
     nokta.setAttribute('cx', x);
@@ -96,6 +98,7 @@
       const zemin = grup.querySelector('rect');
       const yazi = grup.querySelector('text');
       const k = yazi.getBBox();
+      if (!k.width) continue; // gizli etiket ölçülemez; görününce yeniden ölçülür
       const fs = parseFloat(getComputedStyle(yazi).fontSize);
       zemin.setAttribute('x', k.x - fs * .5);
       zemin.setAttribute('y', k.y - fs * .2);
@@ -104,14 +107,24 @@
       zemin.setAttribute('rx', fs * .45);
     }
   }
-  matchMedia('(max-width: 600px)').addEventListener('change', () => { if (!durum.bolge) zeminleriBoyutla(); });
+  matchMedia('(max-width: 600px)').addEventListener('change', () => zeminleriBoyutla());
 
   let durum = { bolge: null, plaka: null };
   let kutu = { ...TAM };
   let hedef = TAM;
   let kare = null;
 
-  const viewBoxYaz = k => svg.setAttribute('viewBox', `${k.x} ${k.y} ${k.width} ${k.height}`);
+  // İl etiketleri yakınlaşınca büyümesin: noktaları çevresinde ters ölçeklenir.
+  function viewBoxYaz(k) {
+    svg.setAttribute('viewBox', `${k.x} ${k.y} ${k.width} ${k.height}`);
+    // Piksel başına birim: kutu en ya da boydan hangisiyle sığıyorsa o (preserveAspectRatio meet).
+    const cw = svg.clientWidth || 1, ch = svg.clientHeight || 1;
+    const s = Math.max(k.width / cw, k.height / ch) / Math.max(TAM.width / cw, TAM.height / ch);
+    for (const g of ilEtiketleri.children) {
+      const { x, y } = g.dataset;
+      g.setAttribute('transform', `translate(${x} ${y}) scale(${s}) translate(${-x} ${-y})`);
+    }
+  }
 
   function yakinlas(yeniHedef, aninda) {
     if (yeniHedef === hedef && !aninda) return;
@@ -135,8 +148,13 @@
     const ilde = ilEkraniMi(durum);
     haritaKutusu.hidden = ilde; // önce görünür olmalı: gizli SVG'de getBBox() sıfır döner
     svg.classList.toggle('bolge-acik', !!bolge);
+    document.body.classList.toggle('il-modu', ilde);
     if (bolge) { bolgeVurgula(uzerindeki, false); uzerindeki = null; }
-    else zeminleriBoyutla();
+    // Bölge açıkken yalnızca o bölgedeki gezili illerin etiketi görünür.
+    for (const g of ilEtiketleri.children) {
+      g.classList.toggle('gizli', !!bolge && bolgeBul(Number(g.dataset.plaka)) !== bolge);
+    }
+    zeminleriBoyutla();
     for (const g of ilGruplari) {
       g.classList.toggle('soluk', !!bolge && g.dataset.bolge !== bolge);
       g.classList.toggle('secili', plaka !== null && Number(g.dataset.plakakodu) === plaka);

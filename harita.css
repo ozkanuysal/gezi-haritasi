@@ -1,0 +1,95 @@
+:root {
+  --zemin: #f7f5ef;
+  --yazi: #1f2937;
+  --soluk-yazi: #6b7280;
+  --kenar: #e5e1d6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--zemin);
+  color: var(--yazi);
+}
+
+.ust { text-align: center; padding: 28px 16px 8px; }
+.ust h1 { margin: 0; font-size: 2rem; letter-spacing: .5px; }
+.alt-baslik { margin: 6px 0 0; color: var(--soluk-yazi); }
+
+main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+.arac-cubugu {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 48px; margin: 8px 0;
+}
+.arac-cubugu h2 { margin: 0; font-size: 1.25rem; }
+#geri {
+  font: inherit; font-weight: 600;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--kenar); background: #fff; color: var(--yazi);
+  cursor: pointer;
+}
+#geri:hover { background: #f0ede4; }
+
+.harita svg {
+  display: block; width: 100%; height: auto;
+  aspect-ratio: 1007.478 / 527.323;
+}
+
+#svg-turkiye-haritasi g[data-bolge] path {
+  fill: var(--renk);
+  stroke: #fff; stroke-width: .8px;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition: opacity .3s, filter .2s;
+}
+#svg-turkiye-haritasi g.uzerinde path,
+#svg-turkiye-haritasi.bolge-acik g[data-bolge]:hover path { filter: brightness(.85); }
+#svg-turkiye-haritasi g.soluk path { opacity: .25; }
+#svg-turkiye-haritasi g.secili path {
+  stroke: var(--yazi); stroke-width: 2.5px;
+  filter: brightness(.8);
+}
+#svg-turkiye-haritasi g.bolgesiz { pointer-events: none; }
+#svg-turkiye-haritasi g.bolgesiz path { fill: #d6d3cb; stroke: #fff; stroke-width: .8px; vector-effect: non-scaling-stroke; }
+
+.bolge-adi {
+  font-size: 15px; font-weight: 700;
+  fill: var(--yazi);
+  paint-order: stroke; stroke: rgba(255, 255, 255, .85); stroke-width: 4px;
+  stroke-linejoin: round;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.bolge-acik .bolge-adlari { display: none; }
+
+.kart {
+  display: inline-flex; flex-direction: column; gap: 2px;
+  margin: 12px 0; padding: 12px 18px;
+  background: #fff; border: 1px solid var(--kenar); border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+.kart[hidden] { display: none; }
+.kart strong { font-size: 1.2rem; }
+.kart span { color: var(--soluk-yazi); }
+
+.etiket {
+  position: fixed; z-index: 10; pointer-events: none;
+  padding: 6px 12px; border-radius: 6px;
+  background: var(--yazi); color: #fff; font-size: .9rem;
+  transform: translate(-50%, 0);
+}
+
+.alt {
+  text-align: center; color: var(--soluk-yazi); font-size: .8rem;
+  padding: 24px 16px;
+}
+.alt a { color: inherit; }
+
+@media (max-width: 600px) {
+  .ust h1 { font-size: 1.6rem; }
+  .harita svg { aspect-ratio: 4 / 3; }
+  .bolge-adi { font-size: 30px; stroke-width: 6px; }
+}

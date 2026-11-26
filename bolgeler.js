@@ -7,7 +7,8 @@ const BOLGELER = [
   { id: 'ege', ad: 'Ege Bölgesi', renk: '#6cc5c0',
     plakalar: [3, 9, 20, 35, 43, 45, 48, 64] },
   { id: 'akdeniz', ad: 'Akdeniz Bölgesi', renk: '#f6a86b',
-    plakalar: [1, 7, 15, 31, 32, 33, 46, 80] },
+    plakalar: [1, 7, 15, 31, 32, 33, 46, 80],
+    etiket: { x: 266, y: 388 } }, // kutunun ortası İç Anadolu'ya düşüyor; Antalya üstüne alındı
   { id: 'ic-anadolu', ad: 'İç Anadolu Bölgesi', renk: '#f2d16b',
     plakalar: [6, 18, 26, 38, 40, 42, 50, 51, 58, 66, 68, 70, 71] },
   { id: 'karadeniz', ad: 'Karadeniz Bölgesi', renk: '#6fb07a',

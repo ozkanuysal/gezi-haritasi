@@ -2,9 +2,9 @@
 // Kaynak: tr.wikipedia.org "Türkiye'nin illeri" tablosu, Bölge sütunu (2026-11-26).
 // Resmî bölge sınırları il sınırlarını keser; burada her il tek bölgeye atanmıştır.
 const BOLGELER = [
-  { id: 'marmara', ad: 'Marmara Bölgesi', renk: '#7fb3d5',
+  { id: 'marmara', ad: 'Marmara Bölgesi', renk: '#e7a1c4',
     plakalar: [10, 11, 16, 17, 22, 34, 39, 41, 54, 59, 77] },
-  { id: 'ege', ad: 'Ege Bölgesi', renk: '#6cc5c0',
+  { id: 'ege', ad: 'Ege Bölgesi', renk: '#b9cf6e',
     plakalar: [3, 9, 20, 35, 43, 45, 48, 64] },
   { id: 'akdeniz', ad: 'Akdeniz Bölgesi', renk: '#f6a86b',
     plakalar: [1, 7, 15, 31, 32, 33, 46, 80],

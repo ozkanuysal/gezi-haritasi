@@ -410,7 +410,7 @@ void main() {
       if (isaretler.some(i => i.ad === u.ad)) continue;
       const isaret = el('div', `kure-isaret kure-isaret--${u.yon}`);
       isaret.hidden = true;
-      isaret.append(el('span', 'kure-isaret-nokta'), el('span', 'kure-isaret-ad', u.ad));
+      isaret.append(el('span', 'kure-isaret-nokta'), el('span', 'kure-isaret-ad', u.sehir || u.ad));
       katman.appendChild(isaret);
       isaretler.push({ ad: u.ad, lon: u.konum.boylam, lat: u.konum.enlem, el: isaret });
     }

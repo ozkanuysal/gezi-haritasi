@@ -14,8 +14,8 @@ test('Almanya-Hollanda gezisi tablodaki değerlerle', () => {
   assert.deepEqual(g.anahtarKelimeler, ['Matematik ve sanat ilişkisi', 'kültürlerarası etkileşim',
     'Avrupa kültürel mirası', 'geometrik ve estetik düşünme', 'disiplinler arası öğrenme']);
   assert.deepEqual(g.ulkeler, [
-    { ad: 'Almanya', konum: { enlem: 51.1638, boylam: 10.4478 }, yon: 'sag' },
-    { ad: 'Hollanda', konum: { enlem: 52.2435, boylam: 5.6343 }, yon: 'sol' },
+    { ad: 'Almanya', sehir: 'Frankfurt', konum: { enlem: 50.1106, boylam: 8.6822 }, yon: 'sag' },
+    { ad: 'Hollanda', sehir: 'Amsterdam', konum: { enlem: 52.37, boylam: 4.88 }, yon: 'sol' },
   ]);
   assert.equal(g.fotograf.dosya, 'gorseller/rijksmuseum.jpg');
   assert.equal(g.fotograf.yazar, 'Trougnouf (Benoit Brummer)');

@@ -203,6 +203,7 @@ test('kürede sol menü: yurt dışı geziler kartı ve ülke işaretleri', () =
   const k = oku('kure.js');
   assert.match(k, /YURTDISI_GEZILER/);
   assert.match(k, /kure-isaret/);
+  assert.match(k, /el\('span', 'kure-isaret-ad', u\.sehir \|\| u\.ad\)/); // işarette şehir adı (2026-11-26)
   assert.match(k, /gecisGorunumu\(/);
   assert.match(css, /\.kure-menu \{/);
 });

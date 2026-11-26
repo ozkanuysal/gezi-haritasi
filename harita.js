@@ -253,7 +253,7 @@
   durum = sonrakiDurum(durum, { tur: 'hash', hash: location.hash });
   ciz(true);
 
-  // Açı Schools açılış ekranı: ~2 sn sonra ya da dokununca kaybolur.
+  // Açı Okulları açılış ekranı: ~2 sn sonra ya da dokununca kaybolur.
   const acilis = document.getElementById('acilis');
   const acilisiKapat = () => {
     if (acilis.classList.contains('bitti')) return;

@@ -17,7 +17,7 @@ body {
 .ust { text-align: center; padding: 28px 16px 8px; }
 .ust h1 { margin: 0; font-size: 2rem; letter-spacing: .5px; }
 
-/* Açılış ekranı: Açı Schools sembolü ve yazısı, sonra harita. */
+/* Açılış ekranı: Açı Okulları sembolü ve yazısı, sonra harita. */
 .acilis {
   position: fixed; inset: 0; z-index: 100;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;

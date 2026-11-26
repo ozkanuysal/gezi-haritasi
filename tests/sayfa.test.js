@@ -27,8 +27,8 @@ test('il kartı haritanın üstündeki araç çubuğunda, harita ekran yüksekli
 });
 
 // v2 (2026-11-26): kullanıcı istekleri
-test('açılışta Açı Schools ekranı: logo ve yazı', () => {
-  assert.match(html, /<div id="acilis"[^>]*>[\s\S]*src="gorseller\/aci-logo\.png"[\s\S]*Açı Schools[\s\S]*?<\/div>/);
+test('açılışta Açı Okulları ekranı: logo ve yazı', () => {
+  assert.match(html, /<div id="acilis"[^>]*>[\s\S]*src="gorseller\/aci-logo\.png"[\s\S]*Açı Okulları[\s\S]*?<\/div>/);
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'gorseller', 'aci-logo.png')));
   assert.match(js, /acilis/);
 });
@@ -83,9 +83,9 @@ test('ciz: harita görünür yapılmadan etiket zeminleri ölçülmez (il ekran�
   assert.ok(gorunur > 0 && olcum > 0 && gorunur < olcum, `görünürlük ${gorunur}, ölçüm ${olcum}`);
 });
 
-test('başlık: Açı Schools 2026-2027 Gezi Haritası', () => {
-  assert.match(html, /<h1>Açı Schools 2026-2027 Gezi Haritası<\/h1>/);
-  assert.match(html, /<title>Açı Schools 2026-2027 Gezi Haritası<\/title>/);
+test('başlık: Açı Okulları 2026-2027 Gezi Haritası', () => {
+  assert.match(html, /<h1>Açı Okulları 2026-2027 Gezi Haritası<\/h1>/);
+  assert.match(html, /<title>Açı Okulları 2026-2027 Gezi Haritası<\/title>/);
 });
 
 // 2026-11-26: bölge görünümünde il etiketi; il ekranında büyük harita
@@ -185,4 +185,11 @@ test('kürede Türkiye\'ye dokunuş haritayı açar: sınır verisi yüklü, dok
   const i = f => html.indexOf(`src="${f}"`);
   assert.ok(i('turkiye-sinir.js') > 0 && i('turkiye-sinir.js') < i('kure.js'));
   assert.match(oku('kure.js'), /turkiyeIcindeMi\(k\.lon, k\.lat\)\) kapat\(\)/);
+});
+
+test('sayfada artık "Açı Schools" yok, "Açı Okulları" var (2026-11-26)', () => {
+  const tam = oku('index.html');
+  assert.ok(!tam.includes('Açı Schools'));
+  assert.match(tam, /aria-label="Açı Okulları"/);
+  assert.match(tam, /<p class="acilis-yazi">Açı Okulları<\/p>/);
 });

@@ -20,6 +20,7 @@ ve gezi mekânının yeri, sağda fotoğraf, hafta, sınıf, ders, anahtar kelim
 | `cekirdek.js` | Saf mantık: durum `{bolge, plaka}`, olaylar, adres, projeksiyon (DOM'a dokunmaz) |
 | `harita.js` | Türkiye haritası; durumu `ciz()` ile çizer, il ekranını açar/kapatır |
 | `yurtdisi.js` | Yurt dışı geziler: kürede soldaki menüde kart, ülkelerin ortasında işaret |
+| `ulke-sinirlari.js` | Yurt dışı gezi ülkelerinin sınırları (OSM); kürede ülkeye dokununca bilgi kartı |
 | `turkiye-sinir.js` | Türkiye sınırı (sadeleştirilmiş, OSM); kürede Türkiye'ye dokunuşu anlamak için |
 | `kure.js` | Açılış küresi (WebGL): döner, Türkiye'ye yakınlaşır, haritaya geçer; yalnızca ana sayfa açılışında |
 | `il-ekrani.js` | İl ekranı: ilçe haritası, iğneler, gezi kartları |

@@ -214,11 +214,14 @@ test('kürede sol menü: yurt dışı geziler kartı ve ülke işaretleri', () =
   assert.match(css, /\.kure-menu \{/);
 });
 
-test('yurt dışı kartı kapalıyken yalnızca ad ve ülkeler; tıklayınca ayrıntı açılır (2026-11-26)', () => {
+test('yurt dışı: soldaki listede yalnızca ad ve ülkeler; ayrıntı ülkeye tıklayınca sağdaki bilgi kartında (2026-11-26)', () => {
   const k = oku('kure.js');
   assert.match(k, /g\.ulkeler\.map\(u => u\.ad\)\.join\(' · '\)/);
-  assert.match(k, /const ayrinti = el\('div', 'kure-ayrinti'\);\s*ayrinti\.hidden = true;/);
-  assert.match(k, /ayrinti\.hidden = !acik;/);
-  assert.match(k, /setAttribute\('aria-expanded', String\(acik\)\)/);
-  assert.match(css, /@media \(hover: hover\) \{[\s\S]*\.kure-kart:hover/);
+  assert.ok(!/kure-ayrinti/.test(k), 'listede açılır-kapanır ayrıntı kalmış');
+  assert.match(html, /<div id="kure"[^>]*>[\s\S]*<aside id="kure-bilgi" class="kure-bilgi" hidden>[\s\S]*id="kure-bilgi-kapat"/);
+  assert.match(k, /function ulkeyiAc\(ad\)/);
+  assert.match(k, /const u = ulkeBul\(k\.lon, k\.lat\);\s*if \(u\) ulkeyiAc\(u\);/);
+  const i = f => html.indexOf(`src="${f}"`);
+  assert.ok(i('ulke-sinirlari.js') > 0 && i('ulke-sinirlari.js') < i('kure.js'));
+  assert.match(css, /\.kure-bilgi \{/);
 });

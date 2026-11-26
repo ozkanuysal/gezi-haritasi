@@ -183,3 +183,16 @@ test('ulkeyeYakinlas: ülkenin ortasına, kısa kenarın 6 katı yarıçapla', (
   const { ulkeyeYakinlas } = require('../kure.js');
   assert.deepEqual(ulkeyeYakinlas({ konum: { enlem: 51.2, boylam: 10.4 } }, 900), { lon: 10.4, lat: 51.2, R: 5400 });
 });
+
+// Kürede ülkeye dokununca bilgi kartı (2026-11-26)
+test('ulkeBul: dokunulan nokta hangi gezi ülkesinde', () => {
+  const { ulkeBul } = require('../kure.js');
+  assert.equal(ulkeBul(8.6822, 50.1106), 'Almanya');   // Frankfurt
+  assert.equal(ulkeBul(13.40, 52.52), 'Almanya');      // Berlin
+  assert.equal(ulkeBul(4.88, 52.37), 'Hollanda');      // Amsterdam
+  assert.equal(ulkeBul(4.48, 51.92), 'Hollanda');      // Rotterdam
+  assert.equal(ulkeBul(2.35, 48.86), null);            // Paris
+  assert.equal(ulkeBul(4.35, 50.85), null);            // Brüksel
+  assert.equal(ulkeBul(32.86, 39.93), null);           // Ankara (Türkiye ayrı)
+  assert.equal(ulkeBul(-68.9, 12.1), null);            // Curaçao: Karayip parçaları alınmadı
+});

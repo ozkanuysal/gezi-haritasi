@@ -88,17 +88,28 @@ const KURE_HESAP = (function () {
     return { lon: Math.atan2(wy, wx) / R2D, lat: Math.asin(Math.max(-1, Math.min(1, wz))) / R2D };
   }
 
-  // Türkiye sınırı (turkiye-sinir.js, OSM) içinde mi: ışın atma, tüm halkalar.
-  const SINIR_HALKALARI = typeof module === 'object' ? require('./turkiye-sinir.js') : TURKIYE_SINIRI;
-  function turkiyeIcindeMi(lon, lat) {
+  // Nokta halkaların (sınır çokgenleri) içinde mi: ışın atma, tüm halkalar.
+  function icindeMi(halkalar, lon, lat) {
     let ic = false;
-    for (const h of SINIR_HALKALARI) {
+    for (const h of halkalar) {
       for (let i = 0, j = h.length - 1; i < h.length; j = i++) {
         const [xi, yi] = h[i], [xj, yj] = h[j];
         if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) ic = !ic;
       }
     }
     return ic;
+  }
+
+  // Türkiye sınırı (turkiye-sinir.js, OSM).
+  const SINIR_HALKALARI = typeof module === 'object' ? require('./turkiye-sinir.js') : TURKIYE_SINIRI;
+  function turkiyeIcindeMi(lon, lat) { return icindeMi(SINIR_HALKALARI, lon, lat); }
+
+  // Yurt dışı gezi ülkeleri (ulke-sinirlari.js, OSM): dokunulan nokta hangi ülkede (yoksa null).
+  const ULKE_HALKALARI = typeof module === 'object' ? require('./ulke-sinirlari.js')
+    : (typeof ULKE_SINIRLARI !== 'undefined' ? ULKE_SINIRLARI : {});
+  function ulkeBul(lon, lat) {
+    for (const [ad, halkalar] of Object.entries(ULKE_HALKALARI)) if (icindeMi(halkalar, lon, lat)) return ad;
+    return null;
   }
 
   // Kürede bir noktanın (boylam, enlem) ekrandaki yeri; arka yüzdeyse görünmez.
@@ -153,7 +164,7 @@ const KURE_HESAP = (function () {
     TURKIYE, SURE, DONUS_MS, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
     TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
     YAKIN_BAS, YAKIN_MS, YAKINLASMA_KATI, ACILIS_BITIS, etiketKonumu, etiketOlcegi,
-    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu, ulkeyeYakinlas,
+    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu, ulkeyeYakinlas, ulkeBul,
   };
 })();
 
@@ -164,7 +175,7 @@ if (typeof module === 'object') module.exports = KURE_HESAP;
 const KURE = (function () {
   if (typeof document === 'undefined') return null;
   const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_BITIS, acilisGorunumu, surukle, yakinlastir, etiketKonumu, etiketOlcegi,
-    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu, ulkeyeYakinlas } = KURE_HESAP;
+    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu, ulkeyeYakinlas, ulkeBul } = KURE_HESAP;
   const katman = document.getElementById('kure');
   const tuval = document.getElementById('kure-tuval');
   const yildizTuval = document.getElementById('kure-yildiz');
@@ -173,6 +184,8 @@ const KURE = (function () {
   const menu = document.getElementById('kure-menu');
   const menuListe = document.getElementById('kure-menu-liste');
   const menuDugme = document.getElementById('kure-menu-dugme');
+  const bilgi = document.getElementById('kure-bilgi');
+  const bilgiIcerik = document.getElementById('kure-bilgi-icerik');
   const gizle = () => { katman.hidden = true; katman.style.transition = ''; katman.style.opacity = ''; };
 
   let gl = null;
@@ -381,62 +394,31 @@ void main() {
     return a;
   }
   for (const g of yurtdisi) {
-    // Kapalıyken yalnızca ad ve ülkeler; tıklayınca ayrıntı açılır ve küre geziye döner.
+    // Soldaki listede yalnızca ad ve ülkeler; tıklayınca küre geziye döner. Ayrıntı: ülkeye tıklayınca sağdaki kartta.
     const kart = el('article', 'kure-kart');
     kart.tabIndex = 0;
     kart.setAttribute('role', 'button');
-    kart.setAttribute('aria-expanded', 'false');
-    kart.setAttribute('aria-label', `${g.ad}: ayrıntıyı aç, kürede göster`);
+    kart.setAttribute('aria-label', `${g.ad}: kürede göster`);
     kart.append(el('h3', null, g.ad), el('p', 'kure-ulkeler', g.ulkeler.map(u => u.ad).join(' · ')));
-    const ayrinti = el('div', 'kure-ayrinti');
-    ayrinti.hidden = true;
-    if (g.fotograf) {
-      const kutu = el('div', 'gezi-foto');
-      const img = el('img');
-      img.src = g.fotograf.dosya; img.alt = g.ad; img.loading = 'lazy';
-      kutu.appendChild(img);
-      const kaynak = el('p', 'foto-kaynak');
-      kaynak.append('Fotoğraf: ', baglanti(g.fotograf.yazar, g.fotograf.kaynakUrl), ' · ',
-        baglanti(g.fotograf.lisans, g.fotograf.lisansUrl));
-      ayrinti.append(kutu, kaynak);
-    }
-    ayrinti.append(el('p', 'gezi-bilgi', `${g.tur} · ${g.hafta}. hafta`),
-      el('p', 'gezi-bilgi', `${g.sinif}. sınıf · ${g.ders}`));
-    const amac = el('p', 'kure-amac');
-    amac.append(el('strong', null, 'Amaç: '), g.amac);
-    const anahtarlar = el('ul', 'anahtarlar');
-    for (const a of g.anahtarKelimeler) anahtarlar.appendChild(el('li', null, a));
-    ayrinti.append(amac, anahtarlar);
-    kart.appendChild(ayrinti);
     const goster = () => {
       if (!gorunum) return;
       const m = gezininMerkezi(g.ulkeler);
       kullanici = true; hiz = { x: 0, y: 0 };
       ucusHedefi = { g0: gorunum, g1: { lon: m.lon, lat: m.lat, R: Math.min(gen(), yuk()) * 2.6 }, t0: performance.now() };
     };
-    const cevir = () => {
-      const acik = !kart.classList.contains('acik');
-      kart.classList.toggle('acik', acik);
-      ayrinti.hidden = !acik;
-      kart.setAttribute('aria-expanded', String(acik));
-      if (acik) goster();
-    };
-    kart.addEventListener('click', e => { if (!e.target.closest('a')) cevir(); });
-    kart.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cevir(); } });
+    kart.addEventListener('click', goster);
+    kart.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goster(); } });
     menuListe.appendChild(kart);
     for (const u of g.ulkeler) {
       if (isaretler.some(i => i.ad === u.ad)) continue;
       const isaret = el('div', `kure-isaret kure-isaret--ulke kure-isaret--${u.yon}`);
       isaret.hidden = true;
       isaret.append(el('span', 'kure-isaret-nokta'), el('span', 'kure-isaret-ad', u.ad));
-      // Ülkeye tıklayınca: şehir noktaları açılır ve küre ülkeye yaklaşır; yeniden tıklayınca kapanır.
+      // Ülkeye tıklayınca: bilgi kartı ve şehir noktaları açılır, küre ülkeye yaklaşır; yeniden tıklayınca kapanır.
       isaret.addEventListener('click', e => {
         e.stopPropagation();
-        if (acikUlkeler.has(u.ad)) { acikUlkeler.delete(u.ad); return; }
-        acikUlkeler.add(u.ad);
-        if (!gorunum) return;
-        kullanici = true; hiz = { x: 0, y: 0 };
-        ucusHedefi = { g0: gorunum, g1: ulkeyeYakinlas(u, Math.min(gen(), yuk())), t0: performance.now() };
+        if (acikUlkeler.has(u.ad)) { acikUlkeler.delete(u.ad); bilgi.hidden = true; return; }
+        ulkeyiAc(u.ad);
       });
       katman.appendChild(isaret);
       isaretler.push({ ad: u.ad, lon: u.konum.boylam, lat: u.konum.enlem, el: isaret });
@@ -449,19 +431,62 @@ void main() {
       }
     }
   }
+  // Sağdaki bilgi kartı: kürede ülkeye (etikete ya da toprağına) tıklayınca o gezinin ayrıntısı.
+  function bilgiKartiniDoldur(g, ulke) {
+    const parcalar = [];
+    if (g.fotograf) {
+      const kutu = el('div', 'gezi-foto');
+      const img = el('img');
+      img.src = g.fotograf.dosya; img.alt = g.ad;
+      kutu.appendChild(img);
+      const kaynak = el('p', 'foto-kaynak');
+      kaynak.append('Fotoğraf: ', baglanti(g.fotograf.yazar, g.fotograf.kaynakUrl), ' · ',
+        baglanti(g.fotograf.lisans, g.fotograf.lisansUrl));
+      parcalar.push(kutu, kaynak);
+    }
+    parcalar.push(el('h3', null, g.ad), el('p', 'kure-ulkeler', g.ulkeler.map(u => u.ad).join(' · ')));
+    if (ulke.sehirler && ulke.sehirler.length) {
+      parcalar.push(el('p', 'kure-sehirler', `${ulke.ad}: ${ulke.sehirler.map(s => s.ad).join(', ')}`));
+    }
+    parcalar.push(el('p', 'gezi-bilgi', `${g.tur} · ${g.hafta}. hafta`), el('p', 'gezi-bilgi', `${g.sinif}. sınıf · ${g.ders}`));
+    const amac = el('p', 'kure-amac');
+    amac.append(el('strong', null, 'Amaç: '), g.amac);
+    const anahtarlar = el('ul', 'anahtarlar');
+    for (const a of g.anahtarKelimeler) anahtarlar.appendChild(el('li', null, a));
+    parcalar.push(amac, anahtarlar);
+    bilgiIcerik.replaceChildren(...parcalar);
+  }
+
+  function ulkeyiAc(ad) {
+    const g = yurtdisi.find(x => x.ulkeler.some(u => u.ad === ad));
+    if (!g) return;
+    const ulke = g.ulkeler.find(u => u.ad === ad);
+    acikUlkeler.add(ad);
+    bilgiKartiniDoldur(g, ulke);
+    bilgi.hidden = false;
+    if (!gorunum) return;
+    kullanici = true; hiz = { x: 0, y: 0 };
+    ucusHedefi = { g0: gorunum, g1: ulkeyeYakinlas(ulke, Math.min(gen(), yuk())), t0: performance.now() };
+  }
+  document.getElementById('kure-bilgi-kapat').addEventListener('click', () => { bilgi.hidden = true; });
+
   menuDugme.addEventListener('click', () => {
     const kapali = menu.classList.toggle('kapali');
     menuDugme.setAttribute('aria-expanded', String(!kapali));
   });
 
-  // Küre, açık menünün kapatmadığı alanın ortasında durur (masaüstünde sağ taraf, telefonda üst taraf).
+  // Küre, açık menü ve bilgi kartının kapatmadığı alanın ortasında durur (masaüstünde yanlar, telefonda alt).
   function bakisMerkezi() {
-    let cx = gen() / 2, cy = yuk() / 2;
-    if (!menu.hidden && !menu.classList.contains('kapali')) {
-      const m = menu.getBoundingClientRect();
-      if (gen() > 700) cx = (m.right + gen()) / 2; else cy = m.top / 2;
+    const menuAcik = !menu.hidden && !menu.classList.contains('kapali');
+    if (gen() > 700) {
+      const sol = menuAcik ? menu.getBoundingClientRect().right : 0;
+      const sag = bilgi.hidden ? gen() : bilgi.getBoundingClientRect().left;
+      return { cx: (sol + sag) / 2, cy: yuk() / 2 };
     }
-    return { cx, cy };
+    let ust = yuk();
+    if (menuAcik) ust = Math.min(ust, menu.getBoundingClientRect().top);
+    if (!bilgi.hidden) ust = Math.min(ust, bilgi.getBoundingClientRect().top);
+    return { cx: gen() / 2, cy: ust / 2 };
   }
 
   function ac() {
@@ -522,6 +547,7 @@ void main() {
     cik.hidden = true;
     turkiyeEtiketi.hidden = true;
     menu.hidden = true;
+    bilgi.hidden = true;
     for (const i of isaretler) i.el.hidden = true;
     acikUlkeler.clear();
     ucusHedefi = null;
@@ -532,7 +558,8 @@ void main() {
   cik.addEventListener('click', e => { e.stopPropagation(); kapat(); });
   document.addEventListener('keydown', e => { if (etkilesimli && e.key === 'Escape') kapat(); });
   katman.addEventListener('pointerdown', e => {
-    if (!etkilesimli || cik.contains(e.target) || menu.contains(e.target) || e.target.closest('.kure-isaret--ulke')) return;
+    if (!etkilesimli || cik.contains(e.target) || menu.contains(e.target) || bilgi.contains(e.target)
+      || e.target.closest('.kure-isaret--ulke')) return;
     ucusHedefi = null;
     katman.setPointerCapture(e.pointerId);
     isaretciler.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -562,13 +589,17 @@ void main() {
       const { cx, cy } = bakisMerkezi();
       const k = ekrandanKonum(e.clientX, e.clientY, gorunum, cx, cy);
       if (k && turkiyeIcindeMi(k.lon, k.lat)) kapat();
+      else if (k) {
+        const u = ulkeBul(k.lon, k.lat);
+        if (u) ulkeyiAc(u);
+      }
     }
     dokunus = null;
   };
   katman.addEventListener('pointerup', birak);
   katman.addEventListener('pointercancel', birak);
   katman.addEventListener('wheel', e => {
-    if (!etkilesimli || !gorunum || menu.contains(e.target)) return;
+    if (!etkilesimli || !gorunum || menu.contains(e.target) || bilgi.contains(e.target)) return;
     e.preventDefault();
     kullanici = true;
     gorunum = yakinlastir(gorunum, Math.exp(-e.deltaY * 0.0015), enKucukR(), enBuyukR());

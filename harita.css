@@ -68,20 +68,29 @@ body {
 .kure-menu.kapali .kure-menu-baslik::after { content: '▸'; }
 .kure-menu-liste { overflow-y: auto; padding: 0 12px 12px; display: flex; flex-direction: column; gap: 12px; }
 .kure-menu.kapali .kure-menu-liste { display: none; }
-.kure-kart { border: 1px solid var(--kenar); border-radius: 12px; padding: 10px; background: #fff; cursor: pointer; }
+.kure-kart { border: 1px solid var(--kenar); border-radius: 12px; padding: 10px; background: #fff; cursor: pointer;
+  transition: background .15s, border-color .15s; }
 .kure-kart:focus-visible { outline: 3px solid #002d72; outline-offset: 2px; }
-.kure-kart { transition: background .15s, border-color .15s; }
-.kure-kart.acik { border-color: #002d72; }
-.kure-kart h3 { display: flex; justify-content: space-between; gap: 8px; }
-.kure-kart h3::after { content: '▸'; color: var(--soluk-yazi); flex: none; }
-.kure-kart.acik h3::after { content: '▾'; }
-.kure-ulkeler { margin: 0; font-size: .88rem; font-weight: 600; color: var(--soluk-yazi); }
-.kure-ayrinti { margin-top: 10px; }
-.kure-kart .gezi-foto { aspect-ratio: 16 / 9; }
 .kure-kart h3 { margin: 0 0 4px; font-size: 1.05rem; color: #002d72; }
-.kure-kart .gezi-bilgi { font-size: .9rem; }
+.kure-ulkeler { margin: 0; font-size: .88rem; font-weight: 600; color: var(--soluk-yazi); }
 .kure-amac { margin: 8px 0; font-size: .88rem; line-height: 1.4; }
-.kure-kart .anahtarlar li { font-size: .78rem; padding: 3px 9px; }
+
+/* Kürede sağdaki bilgi kartı: ülkeye tıklayınca */
+.kure-bilgi {
+  position: absolute; top: 76px; right: 16px; z-index: 3; width: 340px; max-height: calc(100% - 92px);
+  overflow-y: auto; padding: 14px; background: rgba(255, 255, 255, .97); border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .35); cursor: auto; touch-action: auto; color: var(--yazi);
+}
+.kure-bilgi[hidden] { display: none; }
+.kure-bilgi-kapat {
+  position: absolute; top: 8px; right: 8px; z-index: 1; width: 32px; height: 32px;
+  border: 0; border-radius: 50%; background: #eef1f6; color: #002d72; font-size: 1.3rem; line-height: 1; cursor: pointer;
+}
+.kure-bilgi .gezi-foto { aspect-ratio: 16 / 9; }
+.kure-bilgi h3 { margin: 10px 32px 4px 0; font-size: 1.1rem; color: #002d72; }
+.kure-bilgi .gezi-bilgi { font-size: .9rem; }
+.kure-bilgi .anahtarlar li { font-size: .78rem; padding: 3px 9px; }
+.kure-sehirler { margin: 6px 0; font-size: .88rem; }
 
 /* Kürede ülke işaretleri */
 .kure-isaret { position: absolute; left: 0; top: 0; z-index: 1; width: 0; height: 0; pointer-events: none; }
@@ -254,6 +263,7 @@ body.il-modu main { max-width: 1600px; } /* il ekranında harita için daha geni
 }
 
 @media (max-width: 600px) {
+  .kure-bilgi { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 60vh; }
   .kure-menu { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 46vh; }
   .kure-menu.kapali { bottom: 8px; }
   .ust h1 { font-size: 1.6rem; }

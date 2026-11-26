@@ -13,6 +13,7 @@
   const etiket = document.getElementById('etiket');
   const haritaKutusu = document.querySelector('.harita');
   const turkiyeyeDon = document.getElementById('turkiyeye-don');
+  const kureyiAc = document.getElementById('kureyi-ac');
 
   const bolgeById = Object.fromEntries(BOLGELER.map(b => [b.id, b]));
   const ilGruplari = [...svg.querySelectorAll('g[data-plakakodu]')];
@@ -165,6 +166,7 @@
     const ilde = ilEkraniMi(durum);
     haritaKutusu.hidden = ilde; // önce görünür olmalı: gizli SVG'de getBBox() sıfır döner
     turkiyeyeDon.hidden = !ilde;
+    kureyiAc.hidden = !!bolge || !KURE.destekleniyor();
     svg.classList.toggle('bolge-acik', !!bolge);
     document.body.classList.toggle('il-modu', ilde);
     if (bolge) { bolgeVurgula(uzerindeki, false); uzerindeki = null; }
@@ -207,6 +209,7 @@
   });
   geri.addEventListener('click', () => uygula(ilEkraniMi(durum) ? { tur: 'bolgeye-don' } : { tur: 'geri' }));
   turkiyeyeDon.addEventListener('click', () => uygula({ tur: 'geri' }));
+  kureyiAc.addEventListener('click', () => KURE.tekrar(() => svg.querySelector('#turkiye').getBoundingClientRect()));
   window.addEventListener('hashchange', () => {
     if (durumdanHash(hashtenDurum(location.hash)) !== durumdanHash(durum)) uygula({ tur: 'hash', hash: location.hash });
   });

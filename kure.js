@@ -53,21 +53,21 @@ const KURE_HESAP = (function () {
 
 if (typeof module === 'object') module.exports = KURE_HESAP;
 
-// Tarayıcı katmanı: WebGL ile küreyi çizer, Açı ekranından sonra oynatır, bitince katmanı kaldırır.
+// Tarayıcı katmanı: WebGL ile küreyi çizer. Ana sayfa açılışında Açı ekranından sonra oynar;
+// Türkiye görünümündeki dünya simgesiyle yeniden oynatılabilir. Bitince katman gizlenir (silinmez).
 const KURE = (function () {
   if (typeof document === 'undefined') return null;
   const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi } = KURE_HESAP;
   const katman = document.getElementById('kure');
   const tuval = document.getElementById('kure-tuval');
   const yildizTuval = document.getElementById('kure-yildiz');
-  const kaldir = () => { if (katman.isConnected) katman.remove(); };
-  const BOS = { baslat() {} };
+  const gizle = () => { katman.hidden = true; katman.style.transition = ''; katman.style.opacity = ''; };
 
   let gl = null;
   try { gl = tuval.getContext('webgl', { antialias: false, premultipliedAlpha: false }); } catch (e) { gl = null; }
   if (gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) < 4096) gl = null;
   const azHareket = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!oynatilsinMi({ hash: location.hash, azHareket, webgl: !!gl })) { kaldir(); return BOS; }
+  const ilkAcilis = oynatilsinMi({ hash: location.hash, azHareket, webgl: !!gl });
 
   const VS = 'attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }';
   const FS = `precision highp float;
@@ -102,32 +102,6 @@ void main() {
   gl_FragColor = vec4(renk, 1.0);
 }`;
 
-  function golgelendirici(tur, kaynak) {
-    const g = gl.createShader(tur);
-    gl.shaderSource(g, kaynak);
-    gl.compileShader(g);
-    if (!gl.getShaderParameter(g, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(g));
-    return g;
-  }
-  let program;
-  try {
-    program = gl.createProgram();
-    gl.attachShader(program, golgelendirici(gl.VERTEX_SHADER, VS));
-    gl.attachShader(program, golgelendirici(gl.FRAGMENT_SHADER, FS));
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
-  } catch (e) { kaldir(); return BOS; }
-  gl.useProgram(program);
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  const a = gl.getAttribLocation(program, 'a');
-  gl.enableVertexAttribArray(a);
-  gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  const u = ad => gl.getUniformLocation(program, ad);
-  const uMerkez = u('merkez'), uR = u('R'), uBakis = u('bakis');
-
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   // Tuval kendi kutusunun ölçüsüyle (innerWidth/innerHeight bazı ortamlarda kutudan farklı: küre elips olur).
   const gen = () => katman.clientWidth, yuk = () => katman.clientHeight;
@@ -149,34 +123,63 @@ void main() {
     }
   }
 
-  // Yıldızlı uzay hemen hazır: dokular gecikse de boş koyu ekran görünmesin.
-  boyutla();
-  yildizlariCiz();
+  // GL programı ve dokular bir kez kurulur: açılışta ya da dünya simgesine ilk basışta.
+  let kuruldu = false, hata = !gl, hazir = 0, uMerkez, uR, uBakis;
+  function golgelendirici(tur, kaynak) {
+    const g = gl.createShader(tur);
+    gl.shaderSource(g, kaynak);
+    gl.compileShader(g);
+    if (!gl.getShaderParameter(g, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(g));
+    return g;
+  }
+  function kur() {
+    if (kuruldu || !gl) return;
+    kuruldu = true;
+    let program;
+    try {
+      program = gl.createProgram();
+      gl.attachShader(program, golgelendirici(gl.VERTEX_SHADER, VS));
+      gl.attachShader(program, golgelendirici(gl.FRAGMENT_SHADER, FS));
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+    } catch (e) { hata = true; return; }
+    gl.useProgram(program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const a = gl.getAttribLocation(program, 'a');
+    gl.enableVertexAttribArray(a);
+    gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    const u = ad => gl.getUniformLocation(program, ad);
+    uMerkez = u('merkez'); uR = u('R'); uBakis = u('bakis');
 
-  // Dokular: açılış ekranı sürerken yüklenir. file:// ile açılınca tarayıcı izin vermeyebilir → küre atlanır.
-  let hazir = 0, hata = false;
-  [['gorseller/dunya.jpg', 0, gl.REPEAT, 'dunya'], ['gorseller/turkiye-uydu.jpg', 1, gl.CLAMP_TO_EDGE, 'bolge']]
-    .forEach(([kaynak, birim, sarma, ad]) => {
-      const resim = new Image();
-      resim.onload = () => {
-        if (bitti) return;
-        try {
-          gl.activeTexture(gl.TEXTURE0 + birim);
-          gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, resim);
-          gl.generateMipmap(gl.TEXTURE_2D);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sarma);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-          gl.uniform1i(u(ad), birim);
-          hazir++;
-        } catch (e) { hata = true; }
-      };
-      resim.onerror = () => { hata = true; };
-      resim.src = kaynak;
-    });
+    // Yıldızlı uzay hemen hazır: dokular gecikse de boş koyu ekran görünmesin.
+    boyutla();
+    yildizlariCiz();
 
+    // Dokular. file:// ile açılınca tarayıcı izin vermeyebilir → küre atlanır.
+    [['gorseller/dunya.jpg', 0, gl.REPEAT, 'dunya'], ['gorseller/turkiye-uydu.jpg', 1, gl.CLAMP_TO_EDGE, 'bolge']]
+      .forEach(([kaynak, birim, sarma, ad]) => {
+        const resim = new Image();
+        resim.onload = () => {
+          try {
+            gl.activeTexture(gl.TEXTURE0 + birim);
+            gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, resim);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sarma);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.uniform1i(u(ad), birim);
+            hazir++;
+          } catch (e) { hata = true; }
+        };
+        resim.onerror = () => { hata = true; };
+        resim.src = kaynak;
+      });
+  }
 
   function ciz(d) {
     gl.clearColor(0, 0, 0, 0);
@@ -187,18 +190,16 @@ void main() {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
-  let basladi = false, bitti = false;
+  let basladi = false, bitti = true;
   function bitir(hizli) {
     if (bitti) return;
     bitti = true;
-    if (!hizli) return kaldir();
+    if (!hizli) return gizle();
     katman.style.transition = 'opacity .3s';
     katman.style.opacity = 0;
-    setTimeout(kaldir, 320);
+    setTimeout(() => { if (bitti) gizle(); }, 320); // arada yeniden açıldıysa gizleme
   }
   katman.addEventListener('click', () => bitir(true));
-  // Bekçi: baslat hiç çağrılmazsa (ör. önbellekte eski harita.js) katman ekranda takılı kalmasın.
-  setTimeout(() => { if (!basladi) bitir(true); }, 8000);
 
   function oynat(hedefKutu) {
     const t0 = performance.now();
@@ -218,18 +219,47 @@ void main() {
     })(t0);
   }
 
-  // Açı ekranı kapanırken çağrılır; dokular gelmezse en çok BEKLEME_MS bekler, sonra küreyi yumuşakça atlar.
-  const BEKLEME_MS = 800;
-  function baslat(hedefKutu) {
-    if (basladi || bitti) return;
-    basladi = true;
+  // Katmanı açar, dokuları en çok bekleSiniri ms bekler (gelmezse yumuşakça atlar), sonra oynatır.
+  function calistir(hedefKutu, bekleSiniri) {
+    katman.hidden = false;
+    katman.style.transition = '';
+    katman.style.opacity = 1;
+    bitti = false;
+    boyutla();
     const bekleme = performance.now();
     (function bekle() {
+      if (bitti) return;
       if (hata) return bitir(true);
-      if (hazir < 2) return performance.now() - bekleme > BEKLEME_MS ? bitir(true) : setTimeout(bekle, 50);
+      if (hazir < 2) return performance.now() - bekleme > bekleSiniri ? bitir(true) : setTimeout(bekle, 50);
       oynat(hedefKutu);
     })();
   }
 
-  return { baslat };
+  // Açı ekranı kapanırken çağrılır (yalnızca ana sayfa açılışında).
+  const BEKLEME_MS = 800;
+  function baslat(hedefKutu) {
+    if (!ilkAcilis || basladi) return;
+    basladi = true;
+    calistir(hedefKutu, BEKLEME_MS);
+  }
+
+  // Türkiye görünümündeki dünya simgesi: küreyi yeniden oynatır (gerekirse önce kurar).
+  function tekrar(hedefKutu) {
+    if (!gl || !bitti) return;
+    kur();
+    calistir(hedefKutu, 5000);
+  }
+
+  function destekleniyor() { return !!gl && !hata; }
+
+  if (ilkAcilis) {
+    kur();
+    bitti = false; // katman açık, Açı ekranının altında bekliyor
+    // Bekçi: baslat hiç çağrılmazsa (ör. önbellekte eski harita.js) katman ekranda takılı kalmasın.
+    setTimeout(() => { if (!basladi) bitir(true); }, 8000);
+  } else {
+    gizle();
+  }
+
+  return { baslat, tekrar, destekleniyor };
 })();

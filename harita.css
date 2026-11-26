@@ -64,14 +64,14 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   max-height: calc(100vh - 200px);
 }
 
-/* İl ekranında sağ üstte: Türkiye haritasına dönüş simgesi */
-#turkiyeye-don {
+/* Sağ üst simgeler: il ekranında Türkiye'ye dönüş, Türkiye görünümünde küreyi yeniden aç */
+#turkiyeye-don, #kureyi-ac {
   margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
   width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%;
   background: #002d72; color: #fff; cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 45, 114, .25);
 }
-#turkiyeye-don[hidden] { display: none; }
+#turkiyeye-don[hidden], #kureyi-ac[hidden] { display: none; }
 
 #svg-turkiye-haritasi g[data-bolge] path {
   fill: var(--renk);
@@ -185,7 +185,7 @@ body.il-modu main { max-width: 1600px; } /* il ekranında harita için daha geni
 /* Yalnızca gerçek hover olan cihazlarda: dokunmatikte vurgu takılı kalmasın. */
 @media (hover: hover) {
   #geri:hover { background: #f0ede4; }
-  #turkiyeye-don:hover { background: #0a3f94; }
+  #turkiyeye-don:hover, #kureyi-ac:hover { background: #0a3f94; }
   .ilce:hover { filter: brightness(.88); }
   #svg-turkiye-haritasi.bolge-acik g[data-bolge]:hover path { filter: brightness(.85); }
 }

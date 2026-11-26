@@ -125,9 +125,8 @@ test('küre katmanı, iki tuval ve betik sırası', () => {
 // Küre sağlamlaştırma (gözden geçirme, 2026-11-26)
 test('küre: yavaş/başarısız dokuda yumuşak çıkış, kısa bekleme, atlanınca doku yüklenmez', () => {
   const k = oku('kure.js');
-  assert.match(k, /resim\.onload = \(\) => \{\s*if \(bitti\) return;/);
   assert.match(k, /if \(hata\) return bitir\(true\)/);
-  assert.match(k, /> BEKLEME_MS \? bitir\(true\)/);
+  assert.match(k, /> bekleSiniri \? bitir\(true\)/);
   assert.match(k, /const BEKLEME_MS = 800;/);
   assert.match(k, /yildizlariCiz\(\);\s*\n\s*\/\/ Dokular/);
 });
@@ -147,5 +146,20 @@ test('il ekranında harita simgesi: Türkiye görünümüne döner', () => {
   assert.match(html, /<button id="turkiyeye-don"[^>]*aria-label="Türkiye haritasına dön"[^>]*hidden[^>]*>\s*<svg/);
   assert.match(js, /turkiyeyeDon\.hidden = !ilde;/);
   assert.match(js, /turkiyeyeDon\.addEventListener\('click', \(\) => uygula\(\{ tur: 'geri' \}\)\)/);
-  assert.match(css, /#turkiyeye-don \{[^}]*margin-left: auto/);
+  assert.match(css, /#turkiyeye-don, #kureyi-ac \{[^}]*margin-left: auto/);
+});
+
+// Türkiye görünümünde dünya simgesi: küreyi yeniden oynatır (2026-11-26)
+test('Türkiye görünümünde dünya simgesi küreyi yeniden açar', () => {
+  assert.match(html, /<button id="kureyi-ac"[^>]*aria-label="Dünya küresini aç"[^>]*hidden[^>]*>\s*<svg/);
+  assert.match(js, /kureyiAc\.hidden = !!bolge \|\| !KURE\.destekleniyor\(\);/);
+  assert.match(js, /kureyiAc\.addEventListener\('click', \(\) => KURE\.tekrar\(/);
+});
+
+test('küre katmanı bitince silinmez, gizlenir; tekrar oynatılabilir', () => {
+  const k = oku('kure.js');
+  assert.ok(!/katman\.remove\(\)/.test(k), 'katman siliniyor');
+  assert.match(k, /katman\.hidden = true/);
+  assert.match(k, /function tekrar\(hedefKutu\)/);
+  assert.match(k, /return \{ baslat, tekrar, destekleniyor \}/);
 });

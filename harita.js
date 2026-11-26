@@ -1,6 +1,6 @@
 // Haritayı sayfaya bağlar: olayları cekirdek.js'e verir, çıkan durumu ciz() ile çizer.
 (function () {
-  const { bolgeBul, ilAdiSade, hashtenBolge, sonrakiDurum, kutuBirlestir } = GEZI;
+  const { bolgeBul, ilAdiSade, sonrakiDurum, kutuBirlestir, ilEkraniMi, hashtenDurum, durumdanHash } = GEZI;
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const GECIS_MS = 500;
 
@@ -11,6 +11,7 @@
   const kartIl = document.getElementById('kart-il');
   const kartBolge = document.getElementById('kart-bolge');
   const etiket = document.getElementById('etiket');
+  const haritaKutusu = document.querySelector('.harita');
 
   const bolgeById = Object.fromEntries(BOLGELER.map(b => [b.id, b]));
   const ilGruplari = [...svg.querySelectorAll('g[data-plakakodu]')];
@@ -55,11 +56,45 @@
   }
   svg.appendChild(adlar);
 
-  // Lacivert zeminler yazının ölçüsüne göre; yazı boyu ekran genişliğiyle değiştiği için
-  // adlar her göründüğünde yeniden ölçülür.
+  // Gezisi olan iller (geziler.js): Türkiye görünümünde adı yazar, tıklayınca il ekranı açılır.
+  const ilEtiketleri = document.createElementNS(SVG_NS, 'g');
+  ilEtiketleri.setAttribute('class', 'il-etiketleri');
+  for (const plaka of new Set(GEZILER.map(g => g.plaka))) {
+    const parcalar = ilGruplari.filter(g => Number(g.dataset.plakakodu) === plaka);
+    const k = kutuBirlestir(parcalar.map(g => g.getBBox()), 0);
+    const x = k.x + k.width / 2, y = k.y + k.height / 2;
+    const grup = document.createElementNS(SVG_NS, 'g');
+    grup.setAttribute('class', 'il-etiketi');
+    grup.dataset.plaka = plaka;
+    const nokta = document.createElementNS(SVG_NS, 'circle');
+    nokta.setAttribute('class', 'il-noktasi');
+    nokta.setAttribute('cx', x);
+    nokta.setAttribute('cy', y);
+    nokta.setAttribute('r', 3.5);
+    const zemin = document.createElementNS(SVG_NS, 'rect');
+    zemin.setAttribute('class', 'il-zemin');
+    const yazi = document.createElementNS(SVG_NS, 'text');
+    yazi.setAttribute('class', 'il-adi');
+    yazi.setAttribute('x', x);
+    yazi.setAttribute('y', y - 9);
+    yazi.textContent = ilAdiSade(parcalar[0].dataset.iladi);
+    grup.append(nokta, zemin, yazi);
+    ilEtiketleri.appendChild(grup);
+  }
+  svg.appendChild(ilEtiketleri);
+  ilEtiketleri.addEventListener('click', e => {
+    const g = e.target.closest('.il-etiketi');
+    if (!g) return;
+    e.stopPropagation();
+    uygula({ tur: 'il-ac', plaka: Number(g.dataset.plaka) });
+  });
+
+  // Etiket zeminleri yazının ölçüsüne göre; yazı boyu ekran genişliğiyle değiştiği için
+  // etiketler her göründüğünde yeniden ölçülür.
   function zeminleriBoyutla() {
-    for (const grup of adlar.children) {
-      const [zemin, yazi] = grup.children;
+    for (const grup of [...adlar.children, ...ilEtiketleri.children]) {
+      const zemin = grup.querySelector('rect');
+      const yazi = grup.querySelector('text');
       const k = yazi.getBBox();
       const fs = parseFloat(getComputedStyle(yazi).fontSize);
       zemin.setAttribute('x', k.x - fs * .5);
@@ -104,21 +139,28 @@
       g.classList.toggle('soluk', !!bolge && g.dataset.bolge !== bolge);
       g.classList.toggle('secili', plaka !== null && Number(g.dataset.plakakodu) === plaka);
     }
+    const ilde = ilEkraniMi(durum);
+    const ilAdi = plaka === null ? '' :
+      ilAdiSade(ilGruplari.find(x => Number(x.dataset.plakakodu) === plaka).dataset.iladi);
     geri.hidden = !bolge;
-    baslik.textContent = bolge ? bolgeById[bolge].ad : '';
-    kart.hidden = plaka === null;
-    if (plaka !== null) {
-      const g = ilGruplari.find(x => Number(x.dataset.plakakodu) === plaka);
-      kartIl.textContent = ilAdiSade(g.dataset.iladi);
+    geri.textContent = ilde ? `← ${bolgeById[bolge].ad.replace(/ Bölgesi$/, '')}` : '← Türkiye';
+    baslik.textContent = ilde ? ilAdi : bolge ? bolgeById[bolge].ad : '';
+    kart.hidden = plaka === null || ilde;
+    if (plaka !== null && !ilde) {
+      kartIl.textContent = ilAdi;
       kartBolge.textContent = bolgeById[bolge].ad;
     }
+    haritaKutusu.hidden = ilde;
+    if (ilde) IL_EKRANI.goster(plaka, bolgeById[bolge].renk);
+    else IL_EKRANI.gizle();
     yakinlas(bolge ? bolgeKutusu[bolge] : TAM, aninda);
   }
 
   function uygula(olay) {
-    const eski = durum;
+    const eskiAdres = durumdanHash(durum);
     durum = sonrakiDurum(durum, olay);
-    if (durum.bolge !== eski.bolge && olay.tur !== 'hash') location.hash = durum.bolge || '';
+    const yeniAdres = durumdanHash(durum);
+    if (yeniAdres !== eskiAdres && olay.tur !== 'hash') location.hash = yeniAdres;
     ciz(false);
   }
 
@@ -127,9 +169,9 @@
     const g = e.target.closest('g[data-bolge]');
     if (g) uygula({ tur: 'tik', plaka: Number(g.dataset.plakakodu) });
   });
-  geri.addEventListener('click', () => uygula({ tur: 'geri' }));
+  geri.addEventListener('click', () => uygula(ilEkraniMi(durum) ? { tur: 'bolgeye-don' } : { tur: 'geri' }));
   window.addEventListener('hashchange', () => {
-    if (hashtenBolge(location.hash) !== durum.bolge) uygula({ tur: 'hash', hash: location.hash });
+    if (durumdanHash(hashtenDurum(location.hash)) !== durumdanHash(durum)) uygula({ tur: 'hash', hash: location.hash });
   });
 
   // Fare yazısı ve bölge vurgusu yalnızca fareyle: dokunmada ekranda takılı kalmasın.

@@ -16,7 +16,7 @@ mkdir -p "$dizin"
 if [ -n "${ADRES:-}" ]; then
   url="$ADRES"
 else
-  cp -r "$kok"/index.html "$kok"/*.js "$kok"/*.css "$kok"/gorseller "$dizin"/
+  cp -r "$kok"/index.html "$kok"/*.js "$kok"/*.css "$kok"/gorseller "$kok"/iller "$dizin"/
   url="file:///$(wslpath -m "$dizin/index.html")"
 fi
 [ -n "$hash" ] && url="$url#$hash"

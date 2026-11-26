@@ -84,6 +84,72 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 }
 .bolge-acik .bolge-adlari { display: none; }
 
+/* Gezisi olan illerin adı (Türkiye görünümü); tıklanınca il ekranı açılır. */
+.il-etiketleri { cursor: pointer; }
+.bolge-acik .il-etiketleri { display: none; }
+.il-noktasi { fill: #002d72; stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.il-zemin { fill: #fff; stroke: #002d72; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.il-adi { font-size: 12px; font-weight: 700; fill: #002d72; text-anchor: middle; }
+
+/* İl ekranı: solda ilçe haritası, sağda gezi kartları. */
+.il-ekrani {
+  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px; align-items: start; margin-bottom: 32px;
+}
+.il-ekrani[hidden] { display: none; }
+.il-harita-kutusu {
+  position: relative;
+  background: #fff; border: 1px solid var(--kenar); border-radius: 12px; padding: 8px;
+}
+.il-haritasi { display: block; width: 100%; height: auto; max-height: calc(100vh - 200px); }
+.ilce {
+  fill: var(--renk); stroke: #fff; stroke-width: 1px;
+  vector-effect: non-scaling-stroke; transition: filter .2s;
+}
+.igne { cursor: pointer; }
+.igne-halka { fill: #002d72; opacity: .18; }
+.igne-nokta { fill: #002d72; stroke: #fff; stroke-width: 3px; vector-effect: non-scaling-stroke; }
+
+.osm-atif {
+  position: absolute; right: 12px; bottom: 12px;
+  font-size: .72rem; color: var(--soluk-yazi);
+  background: rgba(255, 255, 255, .9); padding: 2px 8px; border-radius: 6px;
+}
+.osm-atif a { color: inherit; }
+.osm-ac {
+  display: none; font: inherit; font-size: .95rem; line-height: 1;
+  border: 0; background: none; color: var(--soluk-yazi); cursor: pointer; padding: 2px;
+}
+.osm-atif.kucuk { padding: 2px 4px; }
+.osm-atif.kucuk .osm-yazi { display: none; }
+.osm-atif.kucuk .osm-ac { display: inline-block; }
+
+.gezi-kartlari { display: flex; flex-direction: column; gap: 16px; }
+.gezi-karti {
+  background: #fff; border: 1px solid var(--kenar); border-radius: 12px; padding: 16px;
+  transition: box-shadow .3s;
+}
+.gezi-karti.vurgu { box-shadow: 0 0 0 3px #002d72; }
+.gezi-foto {
+  aspect-ratio: 4 / 3; overflow: hidden; border-radius: 10px; background: #ebe7dc;
+}
+.gezi-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.foto-kaynak { margin: 4px 0 0; font-size: .72rem; color: var(--soluk-yazi); }
+.foto-kaynak a { color: inherit; }
+.gezi-karti h3 { margin: 14px 0 6px; font-size: 1.35rem; color: #002d72; }
+.gezi-bilgi { margin: 2px 0; font-weight: 600; }
+.gezi-karti h4 {
+  margin: 16px 0 8px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--soluk-yazi);
+}
+.anahtarlar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.anahtarlar li {
+  background: #002d72; color: #fff; padding: 4px 12px; border-radius: 999px; font-size: .9rem;
+}
+.kazanimlar { margin: 0; padding-left: 18px; }
+.kazanimlar li { margin: 6px 0; line-height: 1.4; }
+.kazanimlar strong { color: #002d72; }
+
 .kart {
   display: inline-flex; flex-direction: column; gap: 2px;
   margin-left: auto; padding: 8px 16px;
@@ -104,6 +170,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 /* Yalnızca gerçek hover olan cihazlarda: dokunmatikte vurgu takılı kalmasın. */
 @media (hover: hover) {
   #geri:hover { background: #f0ede4; }
+  .ilce:hover { filter: brightness(.88); }
   #svg-turkiye-haritasi.bolge-acik g[data-bolge]:hover path { filter: brightness(.85); }
 }
 
@@ -111,4 +178,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   .ust h1 { font-size: 1.6rem; }
   .harita svg { aspect-ratio: 4 / 3; }
   .bolge-adi { font-size: 28px; }
+  .il-adi { font-size: 22px; }
+}
+
+@media (max-width: 800px) {
+  .il-ekrani { grid-template-columns: 1fr; }
 }

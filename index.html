@@ -286,12 +286,26 @@
       </svg>
     </div>
 
+    <section id="il-ekrani" class="il-ekrani" hidden>
+      <div class="il-harita-kutusu">
+        <svg id="il-haritasi" class="il-haritasi" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="İl haritası"></svg>
+        <div id="osm-atif" class="osm-atif">
+          <span class="osm-yazi">Harita verisi <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap katkıcıları</a></span>
+          <button id="osm-ac" class="osm-ac" type="button" aria-label="Harita verisinin kaynağı">ⓘ</button>
+        </div>
+      </div>
+      <div id="gezi-kartlari" class="gezi-kartlari"></div>
+    </section>
+
   </main>
 
   <div id="etiket" class="etiket" hidden></div>
 
   <script src="bolgeler.js"></script>
+  <script src="geziler.js"></script>
+  <script src="iller/34.js"></script>
   <script src="cekirdek.js"></script>
+  <script src="il-ekrani.js"></script>
   <script src="harita.js"></script>
 </body>
 </html>

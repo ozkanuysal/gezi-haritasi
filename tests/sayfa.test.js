@@ -7,7 +7,7 @@ const path = require('node:path');
 const oku = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const css = oku('harita.css');
 const js = oku('harita.js');
-const html = oku('index.html').replace(/<svg[\s\S]*<\/svg>/, '');
+const html = oku('index.html').replace(/<svg[^>]*id="svg-turkiye-haritasi"[\s\S]*?<\/svg>/, '');
 
 test('dokunmada yapışan hover yok: :hover kuralı yalnızca (hover: hover) içinde', () => {
   const disarida = css.replace(/@media \(hover: hover\) \{[\s\S]*?\n\}/g, '');
@@ -49,7 +49,28 @@ test('bölge adları lacivert zemin üstünde (v3: lacivert yazı da net değild
 test('sayfanın kullandığı görseller git\'te izleniyor (yayına gidiyor)', () => {
   const { execFileSync } = require('node:child_process');
   const izlenen = execFileSync('git', ['ls-files'], { cwd: path.join(__dirname, '..'), encoding: 'utf8' }).split('\n');
-  for (const [, src] of oku('index.html').matchAll(/src="([^"]+\.(?:png|jpe?g|svg|webp))"/g)) {
+  const kaynaklar = [
+    ...oku('index.html').matchAll(/src="([^"]+\.(?:png|jpe?g|svg|webp))"/g),
+    ...oku('geziler.js').matchAll(/dosya: '([^']+)'/g),
+  ];
+  for (const [, src] of kaynaklar) {
     assert.ok(izlenen.includes(src), `${src} git'te yok`);
   }
+});
+
+// İl ekranı (2026-11-26)
+test('il ekranı ve OSM atfı sayfada', () => {
+  assert.match(html, /id="il-ekrani"/);
+  assert.match(html, /href="https:\/\/www\.openstreetmap\.org\/copyright"/);
+  assert.match(html, /© OpenStreetMap katkıcıları/);
+});
+
+test('betik sırası: bolgeler, geziler, iller/34, cekirdek, harita', () => {
+  const sira = ['bolgeler.js', 'geziler.js', 'iller/34.js', 'cekirdek.js', 'harita.js'].map(f => html.indexOf(`src="${f}"`));
+  assert.ok(sira.every(i => i > 0), sira.join());
+  assert.ok(sira.every((i, k) => k === 0 || sira[k - 1] < i), sira.join());
+});
+
+test('fotoğraf kutusu sabit oranlı (yüklenmezse yerleşim zıplamaz)', () => {
+  assert.match(css, /\.gezi-foto \{[^}]*aspect-ratio:/);
 });

@@ -86,7 +86,7 @@
       g.classList.toggle('secili', plaka !== null && Number(g.dataset.plakakodu) === plaka);
     }
     geri.hidden = !bolge;
-    baslik.textContent = bolge ? bolgeById[bolge].ad : 'Türkiye';
+    baslik.textContent = bolge ? bolgeById[bolge].ad : '';
     kart.hidden = plaka === null;
     if (plaka !== null) {
       const g = ilGruplari.find(x => Number(x.dataset.plakakodu) === plaka);
@@ -151,4 +151,13 @@
   // Açılış: adresteki bölgeyi aç.
   durum = sonrakiDurum(durum, { tur: 'hash', hash: location.hash });
   ciz(true);
+
+  // Açı Schools açılış ekranı: ~2 sn sonra ya da dokununca kaybolur.
+  const acilis = document.getElementById('acilis');
+  const acilisiKapat = () => {
+    acilis.classList.add('bitti');
+    setTimeout(() => acilis.remove(), 700);
+  };
+  acilis.addEventListener('click', acilisiKapat);
+  setTimeout(acilisiKapat, 2200);
 })();

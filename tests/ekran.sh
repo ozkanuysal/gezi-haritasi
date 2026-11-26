@@ -2,6 +2,7 @@
 # Görsel kontrol: sayfanın ekran görüntüsünü headless Edge ile alır (WSL).
 # Kullanım: tests/ekran.sh <hash> <GxY> <cikti.png>
 #   örn.   tests/ekran.sh ege 1440x900 ege.png      (hash boş: "")
+# BEKLE: sanal bekleme (ms, varsayılan 4000; açılış ekranını görmek için ~1200).
 # ADRES verilirse dosya kopyalanmaz, o adres çekilir:
 #   ADRES=https://ozkanuysal.github.io/gezi-haritasi/ tests/ekran.sh ege 1440x900 canli.png
 set -euo pipefail
@@ -15,7 +16,7 @@ mkdir -p "$dizin"
 if [ -n "${ADRES:-}" ]; then
   url="$ADRES"
 else
-  cp "$kok"/index.html "$kok"/*.js "$kok"/*.css "$dizin"/
+  cp -r "$kok"/index.html "$kok"/*.js "$kok"/*.css "$kok"/gorseller "$dizin"/
   url="file:///$(wslpath -m "$dizin/index.html")"
 fi
 [ -n "$hash" ] && url="$url#$hash"
@@ -31,7 +32,7 @@ fi
 
 png="$dizin/goruntu-$$.png"
 "$edge" --headless=new --disable-gpu --hide-scrollbars \
-  --window-size="$pencere" --virtual-time-budget=4000 \
+  --window-size="$pencere" --virtual-time-budget="${BEKLE:-4000}" \
   --user-data-dir="$(wslpath -w "$dizin/profil")" \
   --screenshot="$(wslpath -w "$png")" "$url" >/dev/null 2>&1 || true
 

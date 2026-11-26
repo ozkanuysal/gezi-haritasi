@@ -8,15 +8,19 @@
   <link rel="stylesheet" href="harita.css">
 </head>
 <body>
+  <div id="acilis" class="acilis" role="img" aria-label="Açı Schools">
+    <div class="acilis-sembol"><img src="gorseller/aci-logo.png" alt=""></div>
+    <p class="acilis-yazi">Açı Schools</p>
+  </div>
+
   <header class="ust">
     <h1>Gezi Haritası</h1>
-    <p class="alt-baslik">Bir bölge seç, illerini keşfet.</p>
   </header>
 
   <main>
     <div class="arac-cubugu">
       <button id="geri" type="button" hidden>← Türkiye</button>
-      <h2 id="bolge-basligi">Türkiye</h2>
+      <h2 id="bolge-basligi"></h2>
       <div id="kart" class="kart" hidden>
         <strong id="kart-il"></strong>
         <span id="kart-bolge"></span>
@@ -293,11 +297,6 @@
   </main>
 
   <div id="etiket" class="etiket" hidden></div>
-
-  <footer class="alt">
-    Harita: <a href="https://github.com/dnomak/svg-turkiye-haritasi">svg-turkiye-haritasi</a>
-    (Doğukan Güven Nomak, MIT lisansı).
-  </footer>
 
   <script src="bolgeler.js"></script>
   <script src="cekirdek.js"></script>

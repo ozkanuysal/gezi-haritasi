@@ -2,7 +2,6 @@
 (function () {
   const { bolgeBul, ilAdiSade, hashtenBolge, sonrakiDurum, kutuBirlestir } = GEZI;
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  const TAM = { x: 0, y: 0, width: 1007.478, height: 527.323 };
   const GECIS_MS = 500;
 
   const svg = document.getElementById('svg-turkiye-haritasi');
@@ -16,17 +15,16 @@
   const bolgeById = Object.fromEntries(BOLGELER.map(b => [b.id, b]));
   const ilGruplari = [...svg.querySelectorAll('g[data-plakakodu]')];
 
-  // Hazırlık: her ile bölgesini ve rengini ver; bölgesizler (Kıbrıs) gri kalır.
+  // Hazırlık: her ile bölgesini ve rengini ver.
   for (const g of ilGruplari) {
     const bolge = bolgeBul(Number(g.dataset.plakakodu));
-    if (bolge) {
-      g.dataset.bolge = bolge;
-      g.style.setProperty('--renk', bolgeById[bolge].renk);
-    } else {
-      g.classList.add('bolgesiz');
-    }
+    g.dataset.bolge = bolge;
+    g.style.setProperty('--renk', bolgeById[bolge].renk);
   }
-  svg.querySelector('#guney-kibris').classList.add('bolgesiz');
+
+  // Tam görünüm: Türkiye'nin kendi sınır kutusu; kutunun en-boy oranı CSS'e verilir.
+  const TAM = kutuBirlestir([svg.querySelector('#turkiye').getBBox()], 10);
+  svg.style.setProperty('--oran', `${TAM.width} / ${TAM.height}`);
 
   const gruplar = id => ilGruplari.filter(g => g.dataset.bolge === id);
   const bolgeKutusu = Object.fromEntries(BOLGELER.map(b =>
@@ -49,9 +47,29 @@
       yazi.appendChild(t);
     });
     yazi.setAttribute('y', konum.y);
-    adlar.appendChild(yazi);
+    const zemin = document.createElementNS(SVG_NS, 'rect');
+    zemin.setAttribute('class', 'bolge-zemin');
+    const grup = document.createElementNS(SVG_NS, 'g');
+    grup.append(zemin, yazi);
+    adlar.appendChild(grup);
   }
   svg.appendChild(adlar);
+
+  // Lacivert zeminler yazının ölçüsüne göre; yazı boyu ekran genişliğiyle değiştiği için
+  // adlar her göründüğünde yeniden ölçülür.
+  function zeminleriBoyutla() {
+    for (const grup of adlar.children) {
+      const [zemin, yazi] = grup.children;
+      const k = yazi.getBBox();
+      const fs = parseFloat(getComputedStyle(yazi).fontSize);
+      zemin.setAttribute('x', k.x - fs * .5);
+      zemin.setAttribute('y', k.y - fs * .2);
+      zemin.setAttribute('width', k.width + fs);
+      zemin.setAttribute('height', k.height + fs * .4);
+      zemin.setAttribute('rx', fs * .45);
+    }
+  }
+  matchMedia('(max-width: 600px)').addEventListener('change', () => { if (!durum.bolge) zeminleriBoyutla(); });
 
   let durum = { bolge: null, plaka: null };
   let kutu = { ...TAM };
@@ -81,6 +99,7 @@
     const { bolge, plaka } = durum;
     svg.classList.toggle('bolge-acik', !!bolge);
     if (bolge) { bolgeVurgula(uzerindeki, false); uzerindeki = null; }
+    else zeminleriBoyutla();
     for (const g of ilGruplari) {
       g.classList.toggle('soluk', !!bolge && g.dataset.bolge !== bolge);
       g.classList.toggle('secili', plaka !== null && Number(g.dataset.plakakodu) === plaka);

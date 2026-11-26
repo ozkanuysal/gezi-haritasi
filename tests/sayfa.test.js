@@ -40,11 +40,10 @@ test('kaldırılan yazılar: alt başlık, sol "Türkiye", harita kaynağı sat�
   assert.ok(!html.includes('<footer'), 'harita kaynağı satırı duruyor');
 });
 
-test('bölge adları beyaz kenarsız, koyu ve kalın', () => {
-  const kural = css.match(/\.bolge-adi \{[^}]*\}/)[0];
-  assert.ok(!/stroke: rgba\(255, 255, 255/.test(kural), 'beyaz kenar duruyor');
-  assert.match(kural, /font-weight: 800/);
-  assert.match(kural, /fill: #002d72/);
+test('bölge adları lacivert zemin üstünde (v3: lacivert yazı da net değildi)', () => {
+  assert.match(css, /\.bolge-zemin \{[^}]*fill: #002d72/);
+  assert.match(css, /\.bolge-adi \{[^}]*fill: #fff/);
+  assert.match(js, /createElementNS\(SVG_NS, 'rect'\)/);
 });
 
 test('sayfanın kullandığı görseller git\'te izleniyor (yayına gidiyor)', () => {

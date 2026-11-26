@@ -56,7 +56,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
 .harita svg {
   display: block; width: 100%; height: auto;
-  aspect-ratio: 1007.478 / 527.323;
+  aspect-ratio: var(--oran, 1007.478 / 527.323); /* harita.js Türkiye kutusundan verir */
   max-height: calc(100vh - 200px);
 }
 
@@ -73,12 +73,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   stroke: var(--yazi); stroke-width: 2.5px;
   filter: brightness(.8);
 }
-#svg-turkiye-haritasi g.bolgesiz { pointer-events: none; }
-#svg-turkiye-haritasi g.bolgesiz path { fill: #d6d3cb; stroke: #fff; stroke-width: .8px; vector-effect: non-scaling-stroke; }
 
+.bolge-adlari { pointer-events: none; }
+.bolge-zemin { fill: #002d72; opacity: .9; }
 .bolge-adi {
-  font-size: 16px; font-weight: 800;
-  fill: #002d72;
+  font-size: 15px; font-weight: 700; letter-spacing: .02em;
+  fill: #fff;
   text-anchor: middle;
   pointer-events: none;
 }
@@ -110,5 +110,5 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 @media (max-width: 600px) {
   .ust h1 { font-size: 1.6rem; }
   .harita svg { aspect-ratio: 4 / 3; }
-  .bolge-adi { font-size: 30px; }
+  .bolge-adi { font-size: 28px; }
 }

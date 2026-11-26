@@ -12,10 +12,10 @@ test('SVG 1–81 arası her plakayı içerir ve her biri bir bölgede', () => {
   for (const p of plakalar) assert.notEqual(bolgeBul(p), null, `plaka ${p}`);
 });
 
-test('İstanbul iki parça, Kıbrıs bölgesiz', () => {
+test('İstanbul iki parça; Kıbrıs haritada yok (kullanıcı isteği, v3)', () => {
   assert.deepEqual(gruplar.filter(([, p]) => p === 34).map(([id]) => id).sort(), ['istanbul-asya', 'istanbul-avrupa']);
-  assert.ok(gruplar.some(([id, p]) => id === 'kuzey-kibris' && p === 0));
-  assert.ok(html.includes('id="guney-kibris"'));
+  assert.ok(!/kibris/i.test(html), 'Kıbrıs duruyor');
+  assert.ok(!/kibris|bolgesiz/i.test(fs.readFileSync(path.join(__dirname, '..', 'harita.js'), 'utf8')), 'harita.js Kıbrıs/bölgesiz kodu taşıyor');
 });
 
 test('betikler doğru sırada', () => {

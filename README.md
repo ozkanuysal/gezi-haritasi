@@ -19,6 +19,7 @@ ve gezi mekânının yeri, sağda fotoğraf, hafta, sınıf, ders, anahtar kelim
 | `iller/<plaka>.js` | İlin ilçe haritası (OSM'den üretilir) |
 | `cekirdek.js` | Saf mantık: durum `{bolge, plaka}`, olaylar, adres, projeksiyon (DOM'a dokunmaz) |
 | `harita.js` | Türkiye haritası; durumu `ciz()` ile çizer, il ekranını açar/kapatır |
+| `kure.js` | Açılış küresi (WebGL): döner, Türkiye'ye yakınlaşır, haritaya geçer; yalnızca ana sayfa açılışında |
 | `il-ekrani.js` | İl ekranı: ilçe haritası, iğneler, gezi kartları |
 | `harita.css` | Görünüm |
 | `araclar/il-haritasi.py` | Yeni il için ilçe haritası üretir |
@@ -40,6 +41,7 @@ tests/ekran.sh ege 1440x900 ege.png       # ekran görüntüsü (WSL + Edge)
 
 - Harita: [svg-turkiye-haritasi](https://github.com/dnomak/svg-turkiye-haritasi), © 2015 Doğukan Güven Nomak,
   MIT lisansı (`lisanslar/svg-turkiye-haritasi-LICENSE`).
+- Açılış küresi dokuları: NASA Blue Marble Next Generation (Haziran 2004, topografya + batimetri), NASA Earth Observatory.
 - İlçe sınırları: © OpenStreetMap katkıcıları, ODbL 1.0 (atıf il haritasının köşesinde).
 - Santral İstanbul fotoğrafı: Kurmanbek, CC BY-SA 4.0, Wikimedia Commons.
 - İl–bölge listesi: Vikipedi "Türkiye'nin illeri" tablosu, Bölge sütunu. Resmî bölge sınırları il

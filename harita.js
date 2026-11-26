@@ -234,7 +234,10 @@
   // Açı Schools açılış ekranı: ~2 sn sonra ya da dokununca kaybolur.
   const acilis = document.getElementById('acilis');
   const acilisiKapat = () => {
+    if (acilis.classList.contains('bitti')) return;
     acilis.classList.add('bitti');
+    // Ana sayfa açılışında Açı ekranından sonra küre oynar (kure.js); değilse no-op.
+    KURE.baslat(() => svg.querySelector('#turkiye').getBoundingClientRect());
     setTimeout(() => acilis.remove(), 700);
   };
   acilis.addEventListener('click', acilisiKapat);

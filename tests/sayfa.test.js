@@ -52,6 +52,7 @@ test('sayfanın kullandığı görseller git\'te izleniyor (yayına gidiyor)', (
   const kaynaklar = [
     ...oku('index.html').matchAll(/src="([^"]+\.(?:png|jpe?g|svg|webp))"/g),
     ...oku('geziler.js').matchAll(/dosya: '([^']+)'/g),
+    ...oku('kure.js').matchAll(/'(gorseller\/[^']+)'/g),
   ];
   for (const [, src] of kaynaklar) {
     assert.ok(izlenen.includes(src), `${src} git'te yok`);
@@ -110,4 +111,13 @@ test('her gezili il için ilçe haritası dosyası ve script satırı var', () =
     const i = html.indexOf(`src="iller/${plaka}.js"`);
     assert.ok(i > 0 && i < html.indexOf('src="cekirdek.js"'), `iller/${plaka}.js script satırı yok ya da cekirdek.js'ten sonra`);
   }
+});
+
+// Küre açılışı (2026-11-26)
+test('küre katmanı, iki tuval ve betik sırası', () => {
+  for (const id of ['kure', 'kure-yildiz', 'kure-tuval']) assert.match(html, new RegExp(`id="${id}"`), id);
+  const i = f => html.indexOf(`src="${f}"`);
+  assert.ok(i('cekirdek.js') > 0 && i('cekirdek.js') < i('kure.js') && i('kure.js') < i('harita.js'));
+  assert.match(js, /KURE\.baslat\(/);
+  assert.match(oku('kure.js'), /'gorseller\/dunya\.jpg'/);
 });

@@ -74,3 +74,10 @@ test('betik sırası: bolgeler, geziler, iller/34, cekirdek, harita', () => {
 test('fotoğraf kutusu sabit oranlı (yüklenmezse yerleşim zıplamaz)', () => {
   assert.match(css, /\.gezi-foto \{[^}]*aspect-ratio:/);
 });
+
+test('ciz: harita görünür yapılmadan etiket zeminleri ölçülmez (il ekranından Türkiye\'ye dönüş)', () => {
+  const govde = js.slice(js.indexOf('function ciz('), js.indexOf('function uygula('));
+  const gorunur = govde.indexOf('haritaKutusu.hidden');
+  const olcum = govde.indexOf('zeminleriBoyutla()');
+  assert.ok(gorunur > 0 && olcum > 0 && gorunur < olcum, `görünürlük ${gorunur}, ölçüm ${olcum}`);
+});

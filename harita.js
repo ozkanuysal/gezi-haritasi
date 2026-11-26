@@ -132,6 +132,8 @@
 
   function ciz(aninda) {
     const { bolge, plaka } = durum;
+    const ilde = ilEkraniMi(durum);
+    haritaKutusu.hidden = ilde; // önce görünür olmalı: gizli SVG'de getBBox() sıfır döner
     svg.classList.toggle('bolge-acik', !!bolge);
     if (bolge) { bolgeVurgula(uzerindeki, false); uzerindeki = null; }
     else zeminleriBoyutla();
@@ -139,7 +141,6 @@
       g.classList.toggle('soluk', !!bolge && g.dataset.bolge !== bolge);
       g.classList.toggle('secili', plaka !== null && Number(g.dataset.plakakodu) === plaka);
     }
-    const ilde = ilEkraniMi(durum);
     const ilAdi = plaka === null ? '' :
       ilAdiSade(ilGruplari.find(x => Number(x.dataset.plakakodu) === plaka).dataset.iladi);
     geri.hidden = !bolge;
@@ -150,7 +151,6 @@
       kartIl.textContent = ilAdi;
       kartBolge.textContent = bolgeById[bolge].ad;
     }
-    haritaKutusu.hidden = ilde;
     if (ilde) IL_EKRANI.goster(plaka, bolgeById[bolge].renk);
     else IL_EKRANI.gizle();
     yakinlas(bolge ? bolgeKutusu[bolge] : TAM, aninda);

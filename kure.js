@@ -4,7 +4,7 @@ const KURE_HESAP = (function () {
   const TURKIYE = { bati: 25.67, dogu: 44.82, guney: 35.82, kuzey: 42.10 };
   const SURE = 4600; // ms (2026-11-26: 2 sn uzatıldı, dönüş yavaşladı)
   // Dönüş süresi: açılış küresi ve dünya simgesiyle açılan küre aynı hızda döner (2026-11-26).
-  const DONUS_MS = 3400;
+  const DONUS_MS = 2200; // 3400 → 2200: kullanıcı "hızı daha da yükselt" dedi
   const R2D = Math.PI / 180;
   const sinir = x => Math.min(1, Math.max(0, x));
   const yumusak = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);

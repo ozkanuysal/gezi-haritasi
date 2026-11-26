@@ -38,8 +38,8 @@ test('cizelge: başlangıç, bitiş, tekdüze yakınlaşma', () => {
   assert.equal(e.opaklik, 0);
   assert.equal(cizelge(2000, bas, son).opaklik, 1);
   assert.equal(cizelge(4100, bas, son).opaklik, 1);
-  // Dönüş yavaş: ilk 1800 ms'de 150°'nin %70'inden azı dönülür (eskiden tamamı dönülüyordu).
-  assert.ok(cizelge(1800, bas, son).lon - b.lon < 105);
+  // Dönüş ortak sürenin (DONUS_MS) sonunda tamamlanır; hız isteğe göre değişti (yavaşlat → hızlandır).
+  yakin(cizelge(require('../kure.js').DONUS_MS, bas, son).lon, son.lon);
   let onceki = 0;
   for (let t = 0; t <= SURE; t += 50) { const r = cizelge(t, bas, son).R; assert.ok(r >= onceki - 1e-9, `t=${t}`); onceki = r; }
   yakin(cizelge(SURE + 500, bas, son).R, 4000);
@@ -138,6 +138,7 @@ const { DONUS_MS } = require('../kure.js');
 
 test('açılış küresi ve simgeyle açılan küre aynı hızda döner', () => {
   assert.equal(ACILIS_MS, DONUS_MS);
+  assert.ok(DONUS_MS < 3400, 'dönüş hızlandı (2026-11-26)');
   const son = { R: 4000, cx: 650, cy: 420, lon: TURKIYE_MERKEZI.lon, lat: TURKIYE_MERKEZI.lat };
   const bas = { R: 300, cx: 700, cy: 450 };
   for (const t of [0, 500, 1200, 2000, 2800, DONUS_MS]) {

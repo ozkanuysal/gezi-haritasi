@@ -66,7 +66,9 @@ const IL_EKRANI = (function () {
   // İğne ekranda hep aynı piksel boyunda kalsın (telefonda küçülüp kaybolmasın).
   function igneleriOlcekle() {
     if (!harita.clientWidth) return; // gizliyken ölçülemez; görününce ResizeObserver yeniden çağırır
-    const s = harita.viewBox.baseVal.width / harita.clientWidth;
+    // Piksel başına birim: harita en ya da boydan hangisiyle sığıyorsa o (preserveAspectRatio meet).
+    const vb = harita.viewBox.baseVal;
+    const s = Math.max(vb.width / harita.clientWidth, vb.height / (harita.clientHeight || 1));
     for (const igne of harita.querySelectorAll('.igne')) {
       igne.setAttribute('transform', `translate(${igne.dataset.x} ${igne.dataset.y}) scale(${s})`);
     }
@@ -97,7 +99,8 @@ const IL_EKRANI = (function () {
     const kazanimlar = el('ul', 'kazanimlar');
     for (const { kod, metin } of g.kazanimlar) {
       const li = el('li');
-      li.append(el('strong', null, kod), ` ${metin}`);
+      if (kod) li.append(el('strong', null, kod), ' ');
+      li.append(metin);
       kazanimlar.appendChild(li);
     }
     k.appendChild(kazanimlar);

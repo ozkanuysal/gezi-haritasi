@@ -23,6 +23,35 @@ const GEZILER = [
       kaynakUrl: 'https://commons.wikimedia.org/wiki/File:Istanbul_Bilgi_University_Santralistanbul_Campus_in_March_2023.jpg',
     },
   },
+  {
+    plaka: 42,
+    mekan: 'Konya Gezisi',
+    tur: 'Şehir dışı',
+    hafta: 30, // tabloda "W30"
+    sinif: 6,
+    ders: 'Sosyal Bilgiler',
+    kazanimlar: [ // tabloda kod yok
+      { kod: null, metin: "Anadolu'nun Türk yurdu hâline gelmesinde siyasi ve askerî gelişmelerin etkisini açıklar." },
+      { kod: null, metin: 'Anadolu Selçuklu Devleti’nin Türk-İslam medeniyetine katkılarını değerlendirir.' },
+      { kod: null, metin: 'Türk-İslam medeniyetine ait tarihî, kültürel ve mimari eserleri tanır.' },
+      { kod: null, metin: 'Kültürel mirasın korunmasının ve gelecek nesillere aktarılmasının önemini kavrar.' },
+      { kod: null, metin: 'Doğal ve beşerî coğrafya özelliklerinin ekonomik faaliyetler üzerindeki etkisini açıklar.' },
+    ],
+    anahtarKelimeler: [
+      'Anadolu Selçuklu Devleti', 'Türk-İslam medeniyeti', 'kültürel miras', 'Mevlânâ', 'hoşgörü',
+      'tasavvuf', 'tarihî eser', 'mimari', 'medrese', 'kervansaray', 'başkent', 'ticaret yolları',
+      'doğal ve kültürel zenginlikler', 'kültürel kimlik', 'ortak miras', 'kültürel mirasın korunması',
+      'okul dışı öğrenme',
+    ],
+    konum: { enlem: 37.87056, boylam: 32.50472 }, // Mevlânâ Müzesi, tr.wikipedia
+    fotograf: {
+      dosya: 'gorseller/mevlana-muzesi.jpg',
+      yazar: 'Niels Elgaard Larsen',
+      lisans: 'CC BY-SA 3.0',
+      lisansUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+      kaynakUrl: 'https://commons.wikimedia.org/wiki/File:MevlanaMuseum.jpg',
+    },
+  },
 ];
 
 if (typeof module === 'object') module.exports = GEZILER;

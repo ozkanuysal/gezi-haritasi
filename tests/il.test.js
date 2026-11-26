@@ -37,3 +37,13 @@ test('Santral İstanbul iğnesi Eyüpsultan içinde, Kadıköy dışında', () =
   assert.ok(icinde([n.x, n.y], d('Eyüpsultan')));
   assert.ok(!icinde([n.x, n.y], d('Kadıköy')));
 });
+
+test('Konya: ilçeler, iğne Karatay içinde', () => {
+  const konya = require('../iller/42.js')[42];
+  const adlar = konya.ilceler.map(i => i.ad);
+  assert.equal(konya.ilceler.length, 31);
+  for (const a of ['Karatay', 'Meram', 'Selçuklu']) assert.ok(adlar.includes(a), a);
+  const g = GEZILER.find(x => x.plaka === 42);
+  const n = projeksiyon(g.konum.enlem, g.konum.boylam, konya.projeksiyon);
+  assert.ok(icinde([n.x, n.y], konya.ilceler.find(i => i.ad === 'Karatay').d));
+});

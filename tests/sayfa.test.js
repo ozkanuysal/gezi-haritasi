@@ -97,7 +97,17 @@ test('il etiketi bölge görünümünde de görünür (yalnızca o bölgenin ill
 
 test('il ekranında harita sol tarafı kaplar: geniş sol sütun, kartın boyunca uzayan kutu', () => {
   assert.match(css, /\.il-ekrani \{[^}]*grid-template-columns: minmax\(0, 2fr\) minmax\(320px, 1fr\)/);
-  assert.match(css, /\.il-ekrani \{[^}]*align-items: stretch/);
+  // Kart uzun olsa da harita ekranda bütün görünsün: kutu ekran yüksekliğinde ve yerinde sabit (Konya, 2026-11-26).
+  assert.match(css, /\.il-harita-kutusu \{[^}]*position: sticky/);
+  assert.match(css, /\.il-harita-kutusu \{[^}]*height: calc\(100vh/);
   assert.match(css, /body\.il-modu main \{[^}]*max-width:/);
   assert.match(js, /classList\.toggle\('il-modu'/);
+});
+
+test('her gezili il için ilçe haritası dosyası ve script satırı var', () => {
+  for (const plaka of new Set(require('../geziler.js').map(g => g.plaka))) {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'iller', `${plaka}.js`)), `iller/${plaka}.js yok`);
+    const i = html.indexOf(`src="iller/${plaka}.js"`);
+    assert.ok(i > 0 && i < html.indexOf('src="cekirdek.js"'), `iller/${plaka}.js script satırı yok ya da cekirdek.js'ten sonra`);
+  }
 });

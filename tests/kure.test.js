@@ -132,3 +132,16 @@ test('ekrandanKonum: ekran noktası → enlem/boylam; küre dışı null; ortogr
   const k = ekrandanKonum(700 + 300 * o.x, 450 - 300 * o.y, g, 700, 450);
   yakin(k.lon, 32.86, 1e-6); yakin(k.lat, 39.93, 1e-6);
 });
+
+// 2026-11-26: Ctrl+F5 açılışındaki dönüş hızı ile dünya simgesiyle açılan kürenin dönüş hızı aynı
+const { DONUS_MS } = require('../kure.js');
+
+test('açılış küresi ve simgeyle açılan küre aynı hızda döner', () => {
+  assert.equal(ACILIS_MS, DONUS_MS);
+  const son = { R: 4000, cx: 650, cy: 420, lon: TURKIYE_MERKEZI.lon, lat: TURKIYE_MERKEZI.lat };
+  const bas = { R: 300, cx: 700, cy: 450 };
+  for (const t of [0, 500, 1200, 2000, 2800, DONUS_MS]) {
+    const a = cizelge(t, bas, son), b = acilisGorunumu(t, 300);
+    yakin(a.lon, b.lon); yakin(a.lat, b.lat);
+  }
+});

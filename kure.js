@@ -3,6 +3,8 @@
 const KURE_HESAP = (function () {
   const TURKIYE = { bati: 25.67, dogu: 44.82, guney: 35.82, kuzey: 42.10 };
   const SURE = 4600; // ms (2026-11-26: 2 sn uzatıldı, dönüş yavaşladı)
+  // Dönüş süresi: açılış küresi ve dünya simgesiyle açılan küre aynı hızda döner (2026-11-26).
+  const DONUS_MS = 3400;
   const R2D = Math.PI / 180;
   const sinir = x => Math.min(1, Math.max(0, x));
   const yumusak = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -32,7 +34,7 @@ const KURE_HESAP = (function () {
 
   // t (ms) anındaki görünüm: dönüş 0–3400 ms, yakınlaşma 2400–4300 ms, kayboluş 4150–4600 ms.
   function cizelge(t, bas, son) {
-    const pd = yumusak(sinir(t / 3400));
+    const pd = yumusak(sinir(t / DONUS_MS));
     const py = yumusak(sinir((t - 2400) / 1900));
     return {
       lon: son.lon - 150 * (1 - pd),
@@ -50,7 +52,7 @@ const KURE_HESAP = (function () {
 
   // Etkileşimli küre (dünya simgesi): döner, Türkiye ortada durur; sürüklenir, yakınlaşır.
   const TURKIYE_MERKEZI = { lon: (TURKIYE.bati + TURKIYE.dogu) / 2, lat: (TURKIYE.guney + TURKIYE.kuzey) / 2 };
-  const ACILIS_MS = 2400;
+  const ACILIS_MS = DONUS_MS;
   // Dönüşten sonra kısa aralarla adım adım yakınlaşma (2026-11-26: "birkaç kere yakınlaşsın";
   // sonra "2 kere daha" ve "biraz daha hızlı": 3 → 5 adım, 700/350 → 480/220 → 300/140 ms).
   const ADIM_SAYISI = 5, ADIM_CARPANI = 1.7, ILK_ARA_MS = 300, ADIM_MS = 300, ARA_MS = 140;
@@ -119,7 +121,7 @@ const KURE_HESAP = (function () {
   }
 
   return {
-    TURKIYE, SURE, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
+    TURKIYE, SURE, DONUS_MS, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
     TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
     ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, ILK_ARA_MS, ADIM_MS, ARA_MS, etiketKonumu, etiketOlcegi,
     ekrandanKonum, turkiyeIcindeMi,

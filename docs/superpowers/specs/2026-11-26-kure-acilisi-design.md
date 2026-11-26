@@ -18,7 +18,7 @@ Esin: Gelişim Dünyam'ın açılış küresi (o küre noktalardan yapılmış; 
 - Dokununca atlanır. "Hareketi azalt" açık cihazlarda, WebGL ya da doku yoksa küre oynamaz.
 - Yalnızca ana sayfa açılışında (adreste `#…` yokken); doğrudan bağlantılarda Açı ekranından sonra
   doğrudan hedef.
-- Süre: Açı ekranı ~2,2 sn, küre ~2,6 sn.
+- Süre: Açı ekranı ~2,2 sn, küre ~4,6 sn (2026-11-26: kullanıcı 2 sn uzatıp dönüşü yavaşlattı).
 
 ## Kapsam dışı
 - Küreyle etkileşim (sürükleme, tıklayıp il seçme), gece/gündüz, bulutlar.

@@ -7,7 +7,7 @@ const yakin = (a, b, e = 1e-6) => assert.ok(Math.abs(a - b) < e, `${a} ≈ ${b}`
 
 test('Türkiye sınırları ve süre', () => {
   assert.deepEqual(TURKIYE, { bati: 25.67, dogu: 44.82, guney: 35.82, kuzey: 42.10 });
-  assert.equal(SURE, 2600);
+  assert.equal(SURE, 4600); // 2026-11-26: kullanıcı 2 sn daha uzun ve daha yavaş dönüş istedi
 });
 
 test('ortografik: merkez (0,0), arka yüz görünmez', () => {
@@ -37,6 +37,9 @@ test('cizelge: başlangıç, bitiş, tekdüze yakınlaşma', () => {
   yakin(e.lon, son.lon); yakin(e.lat, son.lat); yakin(e.R, 4000); yakin(e.cx, 650); yakin(e.cy, 420);
   assert.equal(e.opaklik, 0);
   assert.equal(cizelge(2000, bas, son).opaklik, 1);
+  assert.equal(cizelge(4100, bas, son).opaklik, 1);
+  // Dönüş yavaş: ilk 1800 ms'de 150°'nin %70'inden azı dönülür (eskiden tamamı dönülüyordu).
+  assert.ok(cizelge(1800, bas, son).lon - b.lon < 105);
   let onceki = 0;
   for (let t = 0; t <= SURE; t += 50) { const r = cizelge(t, bas, son).R; assert.ok(r >= onceki - 1e-9, `t=${t}`); onceki = r; }
   yakin(cizelge(SURE + 500, bas, son).R, 4000);

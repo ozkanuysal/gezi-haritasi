@@ -2,7 +2,7 @@
 // KURE_HESAP saf hesaptır (Node'da test edilir); KURE tarayıcıda çizer ve oynatır.
 const KURE_HESAP = (function () {
   const TURKIYE = { bati: 25.67, dogu: 44.82, guney: 35.82, kuzey: 42.10 };
-  const SURE = 2600; // ms
+  const SURE = 4600; // ms (2026-11-26: 2 sn uzatıldı, dönüş yavaşladı)
   const R2D = Math.PI / 180;
   const sinir = x => Math.min(1, Math.max(0, x));
   const yumusak = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -30,17 +30,17 @@ const KURE_HESAP = (function () {
     };
   }
 
-  // t (ms) anındaki görünüm: dönüş 0–1800 ms, yakınlaşma 900–2300 ms, kayboluş 2150–2600 ms.
+  // t (ms) anındaki görünüm: dönüş 0–3400 ms, yakınlaşma 2400–4300 ms, kayboluş 4150–4600 ms.
   function cizelge(t, bas, son) {
-    const pd = yumusak(sinir(t / 1800));
-    const py = yumusak(sinir((t - 900) / 1400));
+    const pd = yumusak(sinir(t / 3400));
+    const py = yumusak(sinir((t - 2400) / 1900));
     return {
       lon: son.lon - 150 * (1 - pd),
       lat: 15 + (son.lat - 15) * pd,
       R: bas.R * Math.pow(son.R / bas.R, py),
       cx: bas.cx + (son.cx - bas.cx) * py,
       cy: bas.cy + (son.cy - bas.cy) * py,
-      opaklik: 1 - sinir((t - 2150) / 450),
+      opaklik: 1 - sinir((t - 4150) / 450),
     };
   }
 

@@ -52,3 +52,30 @@ test('oynatilsinMi: yalnızca ana sayfa, hareket serbest ve WebGL varken', () =>
   assert.equal(oynatilsinMi({ hash: '', azHareket: true, webgl: true }), false);
   assert.equal(oynatilsinMi({ hash: '', azHareket: false, webgl: false }), false);
 });
+
+// Etkileşimli küre (dünya simgesi, 2026-11-26): döner, Türkiye'de durur, sürüklenir, yakınlaşır
+const { TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir } = require('../kure.js');
+
+test('acilisGorunumu: başta 150° batıda, sonda Türkiye ortada; yarıçap sabit', () => {
+  assert.deepEqual(TURKIYE_MERKEZI, MERKEZ);
+  const b = acilisGorunumu(0, 300);
+  yakin(b.lon, MERKEZ.lon - 150); yakin(b.lat, 15); assert.equal(b.R, 300);
+  const s = acilisGorunumu(ACILIS_MS + 100, 300);
+  yakin(s.lon, MERKEZ.lon); yakin(s.lat, MERKEZ.lat); assert.equal(s.R, 300);
+});
+
+test('surukle: sağa sürükleyince batıya, aşağı sürükleyince kuzeye bakar; enlem ±85, boylam sarılır', () => {
+  const on = 100 * Math.PI / 18; // R=100'de 10°
+  const g = surukle({ lon: 30, lat: 40, R: 100 }, on, on);
+  yakin(g.lon, 20); yakin(g.lat, 50); assert.equal(g.R, 100);
+  assert.equal(surukle({ lon: 0, lat: 80, R: 100 }, 0, 1000).lat, 85);
+  assert.equal(surukle({ lon: 0, lat: -80, R: 100 }, 0, -1000).lat, -85);
+  yakin(surukle({ lon: 175, lat: 0, R: 100 }, -on, 0).lon, -175);
+});
+
+test('yakinlastir: çarpanla büyür/küçülür, sınırlar içinde kalır', () => {
+  assert.equal(yakinlastir({ lon: 1, lat: 2, R: 100 }, 2, 50, 400).R, 200);
+  assert.equal(yakinlastir({ lon: 1, lat: 2, R: 100 }, 10, 50, 400).R, 400);
+  assert.equal(yakinlastir({ lon: 1, lat: 2, R: 100 }, 0.1, 50, 400).R, 50);
+  assert.deepEqual([yakinlastir({ lon: 1, lat: 2, R: 100 }, 2, 50, 400).lon, yakinlastir({ lon: 1, lat: 2, R: 100 }, 2, 50, 400).lat], [1, 2]);
+});

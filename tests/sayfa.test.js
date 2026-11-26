@@ -153,13 +153,22 @@ test('il ekranında harita simgesi: Türkiye görünümüne döner', () => {
 test('Türkiye görünümünde dünya simgesi küreyi yeniden açar', () => {
   assert.match(html, /<button id="kureyi-ac"[^>]*aria-label="Dünya küresini aç"[^>]*hidden[^>]*>\s*<svg/);
   assert.match(js, /kureyiAc\.hidden = !!bolge \|\| !KURE\.destekleniyor\(\);/);
-  assert.match(js, /kureyiAc\.addEventListener\('click', \(\) => KURE\.tekrar\(/);
+  assert.match(js, /kureyiAc\.addEventListener\('click', \(\) => KURE\.ac\(\)\)/);
 });
 
 test('küre katmanı bitince silinmez, gizlenir; tekrar oynatılabilir', () => {
   const k = oku('kure.js');
   assert.ok(!/katman\.remove\(\)/.test(k), 'katman siliniyor');
   assert.match(k, /katman\.hidden = true/);
-  assert.match(k, /function tekrar\(hedefKutu\)/);
-  assert.match(k, /return \{ baslat, tekrar, destekleniyor \}/);
+  assert.match(k, /function ac\(\)/);
+  assert.match(k, /return \{ baslat, ac, destekleniyor \}/);
+});
+
+test('etkileşimli küre: çıkış simgesi katmanın içinde; Esc, tekerlek ve sürükleme dinleniyor', () => {
+  assert.match(html, /<div id="kure"[^>]*>[\s\S]*<button id="kureden-cik"[^>]*aria-label="Türkiye haritasına dön"[^>]*hidden[\s\S]*?<\/div>/);
+  const k = oku('kure.js');
+  assert.match(k, /e\.key === 'Escape'/);
+  assert.match(k, /addEventListener\('wheel'/);
+  assert.match(k, /addEventListener\('pointerdown'/);
+  assert.match(css, /\.kure\.etkilesimli \{[^}]*touch-action: none/);
 });

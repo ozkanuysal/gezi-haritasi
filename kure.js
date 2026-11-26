@@ -48,7 +48,33 @@ const KURE_HESAP = (function () {
     return (hash === '' || hash === '#') && !azHareket && webgl;
   }
 
-  return { TURKIYE, SURE, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi };
+  // Etkileşimli küre (dünya simgesi): döner, Türkiye ortada durur; sürüklenir, yakınlaşır.
+  const TURKIYE_MERKEZI = { lon: (TURKIYE.bati + TURKIYE.dogu) / 2, lat: (TURKIYE.guney + TURKIYE.kuzey) / 2 };
+  const ACILIS_MS = 2400;
+
+  function acilisGorunumu(t, R) {
+    const e = yumusak(sinir(t / ACILIS_MS));
+    return { lon: TURKIYE_MERKEZI.lon - 150 * (1 - e), lat: 15 + (TURKIYE_MERKEZI.lat - 15) * e, R };
+  }
+
+  // Parmağın altındaki yer parmakla birlikte gider: sağa sürükleyince bakış batıya, aşağı sürükleyince kuzeye.
+  function surukle(g, dx, dy) {
+    const lon = g.lon - dx / g.R / R2D;
+    return {
+      lon: ((lon + 180) % 360 + 360) % 360 - 180,
+      lat: Math.max(-85, Math.min(85, g.lat + dy / g.R / R2D)),
+      R: g.R,
+    };
+  }
+
+  function yakinlastir(g, carpan, enKucuk, enBuyuk) {
+    return { lon: g.lon, lat: g.lat, R: Math.max(enKucuk, Math.min(enBuyuk, g.R * carpan)) };
+  }
+
+  return {
+    TURKIYE, SURE, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
+    TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
+  };
 })();
 
 if (typeof module === 'object') module.exports = KURE_HESAP;
@@ -57,10 +83,11 @@ if (typeof module === 'object') module.exports = KURE_HESAP;
 // Türkiye görünümündeki dünya simgesiyle yeniden oynatılabilir. Bitince katman gizlenir (silinmez).
 const KURE = (function () {
   if (typeof document === 'undefined') return null;
-  const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi } = KURE_HESAP;
+  const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_MS, acilisGorunumu, surukle, yakinlastir } = KURE_HESAP;
   const katman = document.getElementById('kure');
   const tuval = document.getElementById('kure-tuval');
   const yildizTuval = document.getElementById('kure-yildiz');
+  const cik = document.getElementById('kureden-cik');
   const gizle = () => { katman.hidden = true; katman.style.transition = ''; katman.style.opacity = ''; };
 
   let gl = null;
@@ -199,7 +226,7 @@ void main() {
     katman.style.opacity = 0;
     setTimeout(() => { if (bitti) gizle(); }, 320); // arada yeniden açıldıysa gizleme
   }
-  katman.addEventListener('click', () => bitir(true));
+  katman.addEventListener('click', () => { if (!etkilesimli) bitir(true); }); // açılış küresi dokununca atlanır
 
   function oynat(hedefKutu) {
     const t0 = performance.now();
@@ -243,12 +270,90 @@ void main() {
     calistir(hedefKutu, BEKLEME_MS);
   }
 
-  // Türkiye görünümündeki dünya simgesi: küreyi yeniden oynatır (gerekirse önce kurar).
-  function tekrar(hedefKutu) {
+  // Etkileşimli küre (Türkiye görünümündeki dünya simgesi): döner, Türkiye ortada durur ve kalır.
+  // Sürükleyerek döndürülür, tekerlek ya da iki parmakla yakınlaştırılır; harita simgesi ya da Esc kapatır.
+  let etkilesimli = false, gorunum = null, kullanici = false, hiz = { x: 0, y: 0 };
+  const isaretciler = new Map();
+  const enKucukR = () => Math.min(gen(), yuk()) * 0.25;
+  const enBuyukR = () => Math.min(gen(), yuk()) * 6;
+
+  function ac() {
     if (!gl || !bitti) return;
     kur();
-    calistir(hedefKutu, 5000);
+    katman.hidden = false;
+    katman.style.transition = '';
+    katman.style.opacity = 1;
+    katman.classList.add('etkilesimli');
+    cik.hidden = false;
+    bitti = false; etkilesimli = true; kullanici = false; gorunum = null; hiz = { x: 0, y: 0 };
+    boyutla();
+    const bekleme = performance.now();
+    (function bekle() {
+      if (bitti) return;
+      if (hata) return kapat();
+      if (hazir < 2) return performance.now() - bekleme > 5000 ? kapat() : setTimeout(bekle, 50);
+      const t0 = performance.now();
+      (function kare(simdi) {
+        if (bitti) return;
+        try {
+          boyutla();
+          const t = simdi - t0;
+          // Açılış dönüşü; kullanıcı dokununca o anda durur.
+          if (!kullanici && (gorunum === null || t <= ACILIS_MS + 50)) {
+            gorunum = acilisGorunumu(t, Math.min(gen(), yuk()) * 0.4);
+          } else if (!isaretciler.size && (Math.abs(hiz.x) > 0.05 || Math.abs(hiz.y) > 0.05)) {
+            gorunum = surukle(gorunum, hiz.x, hiz.y); // bırakınca yavaşlayarak kayar
+            hiz = { x: hiz.x * 0.92, y: hiz.y * 0.92 };
+          }
+          ciz({ lon: gorunum.lon, lat: gorunum.lat, R: gorunum.R, cx: gen() / 2, cy: yuk() / 2 });
+        } catch (e) { return kapat(); }
+        requestAnimationFrame(kare);
+      })(t0);
+    })();
   }
+
+  function kapat() {
+    if (!etkilesimli) return;
+    etkilesimli = false;
+    isaretciler.clear();
+    cik.hidden = true;
+    katman.classList.remove('etkilesimli');
+    bitir(true);
+  }
+
+  cik.addEventListener('click', e => { e.stopPropagation(); kapat(); });
+  document.addEventListener('keydown', e => { if (etkilesimli && e.key === 'Escape') kapat(); });
+  katman.addEventListener('pointerdown', e => {
+    if (!etkilesimli || cik.contains(e.target)) return;
+    katman.setPointerCapture(e.pointerId);
+    isaretciler.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    kullanici = true;
+    hiz = { x: 0, y: 0 };
+  });
+  katman.addEventListener('pointermove', e => {
+    if (!etkilesimli || !gorunum || !isaretciler.has(e.pointerId)) return;
+    const once = [...isaretciler.values()];
+    const onceki = isaretciler.get(e.pointerId);
+    isaretciler.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (isaretciler.size === 1) {
+      const dx = e.clientX - onceki.x, dy = e.clientY - onceki.y;
+      gorunum = surukle(gorunum, dx, dy);
+      hiz = { x: dx, y: dy };
+    } else if (isaretciler.size === 2) {
+      const aralik = n => Math.hypot(n[0].x - n[1].x, n[0].y - n[1].y);
+      const sonra = [...isaretciler.values()];
+      if (aralik(once) > 0) gorunum = yakinlastir(gorunum, aralik(sonra) / aralik(once), enKucukR(), enBuyukR());
+    }
+  });
+  const birak = e => { isaretciler.delete(e.pointerId); };
+  katman.addEventListener('pointerup', birak);
+  katman.addEventListener('pointercancel', birak);
+  katman.addEventListener('wheel', e => {
+    if (!etkilesimli || !gorunum) return;
+    e.preventDefault();
+    kullanici = true;
+    gorunum = yakinlastir(gorunum, Math.exp(-e.deltaY * 0.0015), enKucukR(), enBuyukR());
+  }, { passive: false });
 
   function destekleniyor() { return !!gl && !hata; }
 
@@ -261,5 +366,5 @@ void main() {
     gizle();
   }
 
-  return { baslat, tekrar, destekleniyor };
+  return { baslat, ac, destekleniyor };
 })();

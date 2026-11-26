@@ -209,7 +209,7 @@
   });
   geri.addEventListener('click', () => uygula(ilEkraniMi(durum) ? { tur: 'bolgeye-don' } : { tur: 'geri' }));
   turkiyeyeDon.addEventListener('click', () => uygula({ tur: 'geri' }));
-  kureyiAc.addEventListener('click', () => KURE.tekrar(() => svg.querySelector('#turkiye').getBoundingClientRect()));
+  kureyiAc.addEventListener('click', () => KURE.ac());
   window.addEventListener('hashchange', () => {
     if (durumdanHash(hashtenDurum(location.hash)) !== durumdanHash(durum)) uygula({ tur: 'hash', hash: location.hash });
   });

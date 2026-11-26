@@ -104,15 +104,6 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   filter: brightness(.8);
 }
 
-.bolge-adlari { pointer-events: none; }
-.bolge-zemin { fill: #002d72; opacity: .9; }
-.bolge-adi {
-  font-size: 15px; font-weight: 700; letter-spacing: .02em;
-  fill: #fff;
-  text-anchor: middle;
-  pointer-events: none;
-}
-.bolge-acik .bolge-adlari { display: none; }
 
 /* Gezisi olan illerin adı (Türkiye görünümü); tıklanınca il ekranı açılır. */
 .il-etiketleri { cursor: pointer; }
@@ -210,7 +201,6 @@ body.il-modu main { max-width: 1600px; } /* il ekranında harita için daha geni
 @media (max-width: 600px) {
   .ust h1 { font-size: 1.6rem; }
   .harita svg { aspect-ratio: 4 / 3; }
-  .bolge-adi { font-size: 28px; }
   .il-adi { font-size: 30px; }
 }
 

@@ -40,10 +40,11 @@ test('kaldırılan yazılar: alt başlık, sol "Türkiye", harita kaynağı sat�
   assert.ok(!html.includes('<footer'), 'harita kaynağı satırı duruyor');
 });
 
-test('bölge adları lacivert zemin üstünde (v3: lacivert yazı da net değildi)', () => {
-  assert.match(css, /\.bolge-zemin \{[^}]*fill: #002d72/);
-  assert.match(css, /\.bolge-adi \{[^}]*fill: #fff/);
-  assert.match(js, /createElementNS\(SVG_NS, 'rect'\)/);
+test('Türkiye haritasında bölge adı etiketi yok (kullanıcı istemedi, 2026-11-26)', () => {
+  assert.ok(!/bolge-adlari|bolge-adi|bolge-zemin/.test(js), 'harita.js bölge adı etiketi üretiyor');
+  assert.ok(!/\.bolge-adi|\.bolge-zemin|\.bolge-adlari/.test(css), 'CSS bölge adı stili taşıyor');
+  assert.ok(!/etiket:/.test(oku('bolgeler.js')), 'bolgeler.js etiket konumu taşıyor');
+  assert.match(js, /createElementNS\(SVG_NS, 'rect'\)/); // il etiketi zemini sürüyor
 });
 
 test('sayfanın kullandığı görseller git\'te izleniyor (yayına gidiyor)', () => {

@@ -33,31 +33,6 @@
   const bolgeKutusu = Object.fromEntries(BOLGELER.map(b =>
     [b.id, kutuBirlestir(gruplar(b.id).map(g => g.getBBox()), 20)]));
 
-  // Bölge adları: kutunun ortasına (ya da bolgeler.js'teki etiket konumuna), çok kelimeliyse iki satır.
-  const adlar = document.createElementNS(SVG_NS, 'g');
-  adlar.setAttribute('class', 'bolge-adlari');
-  for (const b of BOLGELER) {
-    const k = bolgeKutusu[b.id];
-    const konum = b.etiket || { x: k.x + k.width / 2, y: k.y + k.height / 2 };
-    const satirlar = b.ad.replace(/ Bölgesi$/, '').split(' ');
-    const yazi = document.createElementNS(SVG_NS, 'text');
-    yazi.setAttribute('class', 'bolge-adi');
-    satirlar.forEach((s, i) => {
-      const t = document.createElementNS(SVG_NS, 'tspan');
-      t.setAttribute('x', konum.x);
-      t.setAttribute('dy', i === 0 ? `${0.35 - (satirlar.length - 1) * 0.55}em` : '1.1em');
-      t.textContent = s;
-      yazi.appendChild(t);
-    });
-    yazi.setAttribute('y', konum.y);
-    const zemin = document.createElementNS(SVG_NS, 'rect');
-    zemin.setAttribute('class', 'bolge-zemin');
-    const grup = document.createElementNS(SVG_NS, 'g');
-    grup.append(zemin, yazi);
-    adlar.appendChild(grup);
-  }
-  svg.appendChild(adlar);
-
   // Gezisi olan iller (geziler.js): Türkiye görünümünde adı yazar, tıklayınca il ekranı açılır.
   const ilEtiketleri = document.createElementNS(SVG_NS, 'g');
   ilEtiketleri.setAttribute('class', 'il-etiketleri');
@@ -93,23 +68,10 @@
     uygula({ tur: 'il-ac', plaka: Number(g.dataset.plaka) });
   });
 
-  // Etiket zeminleri yazının ölçüsüne göre; yazı boyu ekran genişliğiyle değiştiği için
-  // etiketler her göründüğünde yeniden ölçülür.
-  // Bölge adlarının zemini yerinde boyutlanır; il etiketleri bölge adlarına (ve birbirine) çarpmayacak
-  // yere konur (etiketYeri: üst, alt, sağ, sol).
+  // İl etiketi zemini yazının ölçüsüne göre; yazı boyu ekran genişliğiyle değiştiği için etiketler her
+  // göründüğünde yeniden ölçülür. Etiketler birbirine çarpmayacak yere konur (etiketYeri: üst, alt, sağ, sol).
   function zeminleriBoyutla() {
     const engeller = [];
-    for (const grup of adlar.children) {
-      const zemin = grup.querySelector('rect');
-      const yazi = grup.querySelector('text');
-      const k = yazi.getBBox();
-      if (!k.width) continue; // gizli etiket ölçülemez; görününce yeniden ölçülür
-      const fs = parseFloat(getComputedStyle(yazi).fontSize);
-      const kutu = { x: k.x - fs * .5, y: k.y - fs * .2, width: k.width + fs, height: k.height + fs * .4 };
-      for (const [a, v] of Object.entries(kutu)) zemin.setAttribute(a, v);
-      zemin.setAttribute('rx', fs * .45);
-      engeller.push(kutu);
-    }
     for (const grup of ilEtiketleri.children) {
       const zemin = grup.querySelector('rect');
       const yazi = grup.querySelector('text');

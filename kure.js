@@ -381,10 +381,15 @@ void main() {
     return a;
   }
   for (const g of yurtdisi) {
+    // Kapalıyken yalnızca ad ve ülkeler; tıklayınca ayrıntı açılır ve küre geziye döner.
     const kart = el('article', 'kure-kart');
     kart.tabIndex = 0;
     kart.setAttribute('role', 'button');
-    kart.setAttribute('aria-label', `${g.ad}: kürede göster`);
+    kart.setAttribute('aria-expanded', 'false');
+    kart.setAttribute('aria-label', `${g.ad}: ayrıntıyı aç, kürede göster`);
+    kart.append(el('h3', null, g.ad), el('p', 'kure-ulkeler', g.ulkeler.map(u => u.ad).join(' · ')));
+    const ayrinti = el('div', 'kure-ayrinti');
+    ayrinti.hidden = true;
     if (g.fotograf) {
       const kutu = el('div', 'gezi-foto');
       const img = el('img');
@@ -393,24 +398,31 @@ void main() {
       const kaynak = el('p', 'foto-kaynak');
       kaynak.append('Fotoğraf: ', baglanti(g.fotograf.yazar, g.fotograf.kaynakUrl), ' · ',
         baglanti(g.fotograf.lisans, g.fotograf.lisansUrl));
-      kart.append(kutu, kaynak);
+      ayrinti.append(kutu, kaynak);
     }
-    kart.append(el('h3', null, g.ad),
-      el('p', 'gezi-bilgi', `${g.tur} · ${g.hafta}. hafta`),
+    ayrinti.append(el('p', 'gezi-bilgi', `${g.tur} · ${g.hafta}. hafta`),
       el('p', 'gezi-bilgi', `${g.sinif}. sınıf · ${g.ders}`));
     const amac = el('p', 'kure-amac');
     amac.append(el('strong', null, 'Amaç: '), g.amac);
     const anahtarlar = el('ul', 'anahtarlar');
     for (const a of g.anahtarKelimeler) anahtarlar.appendChild(el('li', null, a));
-    kart.append(amac, anahtarlar);
+    ayrinti.append(amac, anahtarlar);
+    kart.appendChild(ayrinti);
     const goster = () => {
       if (!gorunum) return;
       const m = gezininMerkezi(g.ulkeler);
       kullanici = true; hiz = { x: 0, y: 0 };
       ucusHedefi = { g0: gorunum, g1: { lon: m.lon, lat: m.lat, R: Math.min(gen(), yuk()) * 2.6 }, t0: performance.now() };
     };
-    kart.addEventListener('click', e => { if (!e.target.closest('a')) goster(); });
-    kart.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goster(); } });
+    const cevir = () => {
+      const acik = !kart.classList.contains('acik');
+      kart.classList.toggle('acik', acik);
+      ayrinti.hidden = !acik;
+      kart.setAttribute('aria-expanded', String(acik));
+      if (acik) goster();
+    };
+    kart.addEventListener('click', e => { if (!e.target.closest('a')) cevir(); });
+    kart.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cevir(); } });
     menuListe.appendChild(kart);
     for (const u of g.ulkeler) {
       if (isaretler.some(i => i.ad === u.ad)) continue;

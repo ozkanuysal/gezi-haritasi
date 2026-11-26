@@ -213,3 +213,12 @@ test('kürede sol menü: yurt dışı geziler kartı ve ülke işaretleri', () =
   assert.match(k, /gecisGorunumu\(/);
   assert.match(css, /\.kure-menu \{/);
 });
+
+test('yurt dışı kartı kapalıyken yalnızca ad ve ülkeler; tıklayınca ayrıntı açılır (2026-11-26)', () => {
+  const k = oku('kure.js');
+  assert.match(k, /g\.ulkeler\.map\(u => u\.ad\)\.join\(' · '\)/);
+  assert.match(k, /const ayrinti = el\('div', 'kure-ayrinti'\);\s*ayrinti\.hidden = true;/);
+  assert.match(k, /ayrinti\.hidden = !acik;/);
+  assert.match(k, /setAttribute\('aria-expanded', String\(acik\)\)/);
+  assert.match(css, /@media \(hover: hover\) \{[\s\S]*\.kure-kart:hover/);
+});

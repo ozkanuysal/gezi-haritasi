@@ -70,8 +70,15 @@ body {
 .kure-menu.kapali .kure-menu-liste { display: none; }
 .kure-kart { border: 1px solid var(--kenar); border-radius: 12px; padding: 10px; background: #fff; cursor: pointer; }
 .kure-kart:focus-visible { outline: 3px solid #002d72; outline-offset: 2px; }
+.kure-kart { transition: background .15s, border-color .15s; }
+.kure-kart.acik { border-color: #002d72; }
+.kure-kart h3 { display: flex; justify-content: space-between; gap: 8px; }
+.kure-kart h3::after { content: '▸'; color: var(--soluk-yazi); flex: none; }
+.kure-kart.acik h3::after { content: '▾'; }
+.kure-ulkeler { margin: 0; font-size: .88rem; font-weight: 600; color: var(--soluk-yazi); }
+.kure-ayrinti { margin-top: 10px; }
 .kure-kart .gezi-foto { aspect-ratio: 16 / 9; }
-.kure-kart h3 { margin: 10px 0 4px; font-size: 1.05rem; color: #002d72; }
+.kure-kart h3 { margin: 0 0 4px; font-size: 1.05rem; color: #002d72; }
 .kure-kart .gezi-bilgi { font-size: .9rem; }
 .kure-amac { margin: 8px 0; font-size: .88rem; line-height: 1.4; }
 .kure-kart .anahtarlar li { font-size: .78rem; padding: 3px 9px; }
@@ -241,6 +248,7 @@ body.il-modu main { max-width: 1600px; } /* il ekranında harita için daha geni
 @media (hover: hover) {
   #geri:hover { background: #f0ede4; }
   #turkiyeye-don:hover, #kureyi-ac:hover { background: #0a3f94; }
+  .kure-kart:hover { background: #eef3fb; border-color: #9fb3d6; }
   .ilce:hover { filter: brightness(.88); }
   #svg-turkiye-haritasi.bolge-acik g[data-bolge]:hover path { filter: brightness(.85); }
 }

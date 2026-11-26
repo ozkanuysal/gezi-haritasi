@@ -225,3 +225,11 @@ test('yurt dışı: soldaki listede yalnızca ad ve ülkeler; ayrıntı ülkeye 
   assert.ok(i('ulke-sinirlari.js') > 0 && i('ulke-sinirlari.js') < i('kure.js'));
   assert.match(css, /\.kure-bilgi \{/);
 });
+
+test('girişte yeni Açı logosu, kırpılmadan (2026-11-26)', () => {
+  const crypto = require('node:crypto');
+  const ozet = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '..', 'gorseller', 'aci-logo.png'))).digest('hex');
+  assert.equal(ozet, '5ad07370fe124a8c74242db775b77a00e0a511ff3ff7ede9beaaabb9248ad2ba');
+  assert.ok(!/\.acilis-sembol \{[^}]*aspect-ratio/.test(css), 'logo hâlâ kırpılıyor');
+  assert.ok(!/\.acilis-sembol \{[^}]*overflow: hidden/.test(css), 'logo hâlâ kırpılıyor');
+});

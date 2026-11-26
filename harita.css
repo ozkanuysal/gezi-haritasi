@@ -26,9 +26,7 @@ body {
 }
 .acilis.bitti { opacity: 0; pointer-events: none; }
 .acilis-sembol {
-  width: min(160px, 40vw);
-  aspect-ratio: 1103 / 1060; /* logonun yalnızca sembol kısmı */
-  overflow: hidden;
+  width: min(140px, 34vw); /* logonun tamamı (lacivert zeminli sembol + "açı") */
   animation: belir .8s ease-out both;
 }
 .acilis-sembol img { display: block; width: 100%; height: auto; }

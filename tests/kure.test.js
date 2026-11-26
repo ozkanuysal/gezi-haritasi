@@ -151,3 +151,30 @@ test('açılış küresi ve simgeyle açılan küre aynı hızda döner', () => 
     yakin(a.lon, b.lon); yakin(a.lat, b.lat);
   }
 });
+
+// Yurt dışı geziler (2026-11-26): ülke işaretleri ve karta tıklayınca o tarafa dönüş
+const { noktaKonumu, gezininMerkezi, gecisGorunumu } = require('../kure.js');
+
+test('noktaKonumu: bakış merkezindeki nokta ekran ortasında, arka yüz görünmez', () => {
+  const g = { lon: 10, lat: 51, R: 300 };
+  const m = noktaKonumu(10, 51, g, 700, 450);
+  yakin(m.x, 700); yakin(m.y, 450); assert.equal(m.gorunur, true);
+  assert.equal(noktaKonumu(-170, -51, g, 700, 450).gorunur, false);
+  assert.ok(noktaKonumu(15, 51, g, 700, 450).x > 700);
+  const t = etiketKonumu({ lon: 35, lat: 39, R: 300 }, 700, 450), n = noktaKonumu(TURKIYE_MERKEZI.lon, TURKIYE_MERKEZI.lat, { lon: 35, lat: 39, R: 300 }, 700, 450);
+  yakin(t.x, n.x); yakin(t.y, n.y);
+});
+
+test('gezininMerkezi: ülkelerin ortalaması', () => {
+  const m = gezininMerkezi([{ konum: { enlem: 50, boylam: 10 } }, { konum: { enlem: 52, boylam: 6 } }]);
+  yakin(m.lat, 51); yakin(m.lon, 8);
+});
+
+test('gecisGorunumu: başta g0, sonda g1; boylam kısa yoldan, yarıçap logaritmik', () => {
+  const g0 = { lon: 35, lat: 39, R: 300 }, g1 = { lon: 8, lat: 51.7, R: 1200 };
+  assert.deepEqual(gecisGorunumu(g0, g1, 0, 900), g0);
+  const s = gecisGorunumu(g0, g1, 900, 900); yakin(s.lon, 8); yakin(s.lat, 51.7); yakin(s.R, 1200);
+  yakin(gecisGorunumu(g0, g1, 450, 900).R, 600); // ortada geometrik ortalama
+  const k = gecisGorunumu({ lon: 170, lat: 0, R: 100 }, { lon: -170, lat: 0, R: 100 }, 450, 900);
+  assert.ok(Math.abs(Math.abs(k.lon) - 180) < 1e-9, `kısa yol 180'den geçer: ${k.lon}`);
+});

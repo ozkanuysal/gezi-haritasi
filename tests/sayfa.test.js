@@ -54,6 +54,7 @@ test('sayfanın kullandığı görseller git\'te izleniyor (yayına gidiyor)', (
     ...oku('index.html').matchAll(/src="([^"]+\.(?:png|jpe?g|svg|webp))"/g),
     ...oku('geziler.js').matchAll(/dosya: '([^']+)'/g),
     ...oku('kure.js').matchAll(/'(gorseller\/[^']+)'/g),
+    ...oku('yurtdisi.js').matchAll(/dosya: '([^']+)'/g),
   ];
   for (const [, src] of kaynaklar) {
     assert.ok(izlenen.includes(src), `${src} git'te yok`);
@@ -176,8 +177,8 @@ test('etkileşimli küre: çıkış simgesi katmanın içinde; Esc, tekerlek ve 
 
 test('etkileşimli kürede Türkiye adı: katmanın içinde, her karede konumlanır', () => {
   assert.match(html, /<div id="kure"[^>]*>[\s\S]*<div id="kure-turkiye" class="kure-turkiye" hidden>Türkiye<\/div>/);
-  assert.match(oku('kure.js'), /etiketKonumu\(gorunum, gen\(\) \/ 2, yuk\(\) \/ 2\)/);
-  assert.match(oku('kure.js'), /scale\(\$\{etiketOlcegi\(gorunum\.R, Math\.min\(gen\(\), yuk\(\)\)\)\}\)/);
+  assert.match(oku('kure.js'), /etiketKonumu\(gorunum, cx, cy\)/); // cx, cy: menünün kapatmadığı alanın ortası
+  assert.match(oku('kure.js'), /const olcek = etiketOlcegi\(gorunum\.R, Math\.min\(gen\(\), yuk\(\)\)\);[\s\S]*scale\(\$\{olcek\}\)/);
   assert.match(oku('kure.js'), /const enBuyukR = \(\) => Math\.min\(gen\(\), yuk\(\)\) \* 10;/);
   assert.match(css, /\.kure-turkiye \{[^}]*pointer-events: none/);
 });
@@ -193,4 +194,15 @@ test('sayfada artık "Açı Schools" yok, "Açı Okulları" var (2026-11-26)', (
   assert.ok(!tam.includes('Açı Schools'));
   assert.match(tam, /aria-label="Açı Okulları"/);
   assert.match(tam, /<p class="acilis-yazi">Açı Okulları<\/p>/);
+});
+
+test('kürede sol menü: yurt dışı geziler kartı ve ülke işaretleri', () => {
+  assert.match(html, /<div id="kure"[^>]*>[\s\S]*<aside id="kure-menu" class="kure-menu" hidden>[\s\S]*Yurt dışı geziler/);
+  const i = f => html.indexOf(`src="${f}"`);
+  assert.ok(i('yurtdisi.js') > 0 && i('yurtdisi.js') < i('kure.js'));
+  const k = oku('kure.js');
+  assert.match(k, /YURTDISI_GEZILER/);
+  assert.match(k, /kure-isaret/);
+  assert.match(k, /gecisGorunumu\(/);
+  assert.match(css, /\.kure-menu \{/);
 });

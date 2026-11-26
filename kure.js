@@ -74,6 +74,30 @@ const KURE_HESAP = (function () {
     return 0.55 + 0.45 * sinir((R / kisaKenar - 0.5) / 1.5);
   }
 
+  // Ekrandaki nokta kürenin neresine denk geliyor (küre dışındaysa null). Gölgelendiricideki dönüşümle aynı.
+  function ekrandanKonum(x, y, g, cx, cy) {
+    const px = (x - cx) / g.R, py = -(y - cy) / g.R, r2 = px * px + py * py;
+    if (r2 > 1) return null;
+    const z = Math.sqrt(1 - r2), l0 = g.lon * R2D, f0 = g.lat * R2D;
+    const wx = -px * Math.sin(l0) - py * Math.sin(f0) * Math.cos(l0) + z * Math.cos(f0) * Math.cos(l0);
+    const wy = px * Math.cos(l0) - py * Math.sin(f0) * Math.sin(l0) + z * Math.cos(f0) * Math.sin(l0);
+    const wz = py * Math.cos(f0) + z * Math.sin(f0);
+    return { lon: Math.atan2(wy, wx) / R2D, lat: Math.asin(Math.max(-1, Math.min(1, wz))) / R2D };
+  }
+
+  // Türkiye sınırı (turkiye-sinir.js, OSM) içinde mi: ışın atma, tüm halkalar.
+  const SINIR_HALKALARI = typeof module === 'object' ? require('./turkiye-sinir.js') : TURKIYE_SINIRI;
+  function turkiyeIcindeMi(lon, lat) {
+    let ic = false;
+    for (const h of SINIR_HALKALARI) {
+      for (let i = 0, j = h.length - 1; i < h.length; j = i++) {
+        const [xi, yi] = h[i], [xj, yj] = h[j];
+        if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) ic = !ic;
+      }
+    }
+    return ic;
+  }
+
   // Kürede "Türkiye" yazısının ekrandaki yeri; Türkiye arka yüzdeyse görünmez.
   function etiketKonumu(g, cx, cy) {
     const o = ortografik(TURKIYE_MERKEZI.lon, TURKIYE_MERKEZI.lat, { lon: g.lon, lat: g.lat });
@@ -98,6 +122,7 @@ const KURE_HESAP = (function () {
     TURKIYE, SURE, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
     TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
     ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, ILK_ARA_MS, ADIM_MS, ARA_MS, etiketKonumu, etiketOlcegi,
+    ekrandanKonum, turkiyeIcindeMi,
   };
 })();
 
@@ -107,7 +132,8 @@ if (typeof module === 'object') module.exports = KURE_HESAP;
 // Türkiye görünümündeki dünya simgesiyle yeniden oynatılabilir. Bitince katman gizlenir (silinmez).
 const KURE = (function () {
   if (typeof document === 'undefined') return null;
-  const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_BITIS, acilisGorunumu, surukle, yakinlastir, etiketKonumu, etiketOlcegi } = KURE_HESAP;
+  const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_BITIS, acilisGorunumu, surukle, yakinlastir, etiketKonumu, etiketOlcegi,
+    ekrandanKonum, turkiyeIcindeMi } = KURE_HESAP;
   const katman = document.getElementById('kure');
   const tuval = document.getElementById('kure-tuval');
   const yildizTuval = document.getElementById('kure-yildiz');
@@ -298,6 +324,7 @@ void main() {
   // Etkileşimli küre (Türkiye görünümündeki dünya simgesi): döner, Türkiye ortada durur ve kalır.
   // Sürükleyerek döndürülür, tekerlek ya da iki parmakla yakınlaştırılır; harita simgesi ya da Esc kapatır.
   let etkilesimli = false, gorunum = null, kullanici = false, hiz = { x: 0, y: 0 };
+  let dokunus = null; // kısa, kıpırdamadan dokunuş: Türkiye'nin üstündeyse harita açılır
   const isaretciler = new Map();
   const enKucukR = () => Math.min(gen(), yuk()) * 0.25;
   const enBuyukR = () => Math.min(gen(), yuk()) * 10;
@@ -359,8 +386,10 @@ void main() {
     isaretciler.set(e.pointerId, { x: e.clientX, y: e.clientY });
     kullanici = true;
     hiz = { x: 0, y: 0 };
+    dokunus = isaretciler.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null;
   });
   katman.addEventListener('pointermove', e => {
+    if (dokunus && Math.hypot(e.clientX - dokunus.x, e.clientY - dokunus.y) > 6) dokunus = null;
     if (!etkilesimli || !gorunum || !isaretciler.has(e.pointerId)) return;
     const once = [...isaretciler.values()];
     const onceki = isaretciler.get(e.pointerId);
@@ -375,7 +404,14 @@ void main() {
       if (aralik(once) > 0) gorunum = yakinlastir(gorunum, aralik(sonra) / aralik(once), enKucukR(), enBuyukR());
     }
   });
-  const birak = e => { isaretciler.delete(e.pointerId); };
+  const birak = e => {
+    isaretciler.delete(e.pointerId);
+    if (e.type === 'pointerup' && dokunus && etkilesimli && gorunum && performance.now() - dokunus.t < 500) {
+      const k = ekrandanKonum(e.clientX, e.clientY, gorunum, gen() / 2, yuk() / 2);
+      if (k && turkiyeIcindeMi(k.lon, k.lat)) kapat();
+    }
+    dokunus = null;
+  };
   katman.addEventListener('pointerup', birak);
   katman.addEventListener('pointercancel', birak);
   katman.addEventListener('wheel', e => {

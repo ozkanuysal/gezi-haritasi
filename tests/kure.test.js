@@ -112,3 +112,23 @@ test('etiketKonumu: Türkiye ortadayken ekranın ortasında, arka yüzdeyken gö
   const dogu = etiketKonumu({ lon: TURKIYE_MERKEZI.lon - 20, lat: TURKIYE_MERKEZI.lat, R: 300 }, 700, 450);
   assert.ok(dogu.x > 700, 'bakış batıdayken Türkiye sağda');
 });
+
+// Kürede Türkiye'ye dokununca harita açılır (2026-11-26)
+const { ekrandanKonum, turkiyeIcindeMi } = require('../kure.js');
+
+test('turkiyeIcindeMi: Türkiye içi ve dışı noktalar', () => {
+  for (const [ad, lon, lat] of [['Ankara', 32.86, 39.93], ['İstanbul Fatih', 28.95, 41.01], ['Kadıköy', 29.03, 40.99],
+    ['Gökçeada', 25.85, 40.18], ['Van', 43.38, 38.5], ['Hatay', 36.2, 36.2]]) assert.ok(turkiyeIcindeMi(lon, lat), ad);
+  for (const [ad, lon, lat] of [['Atina', 23.73, 37.98], ['Karadeniz ortası', 34.0, 43.0], ['Lefkoşa', 33.36, 35.17],
+    ['Şam', 36.29, 33.51], ['Tiflis', 44.79, 41.72], ['Sofya', 23.32, 42.7]]) assert.ok(!turkiyeIcindeMi(lon, lat), ad);
+});
+
+test('ekrandanKonum: ekran noktası → enlem/boylam; küre dışı null; ortografikle gidiş-dönüş', () => {
+  const g = { lon: TURKIYE_MERKEZI.lon, lat: TURKIYE_MERKEZI.lat, R: 300 };
+  const m = ekrandanKonum(700, 450, g, 700, 450);
+  yakin(m.lon, g.lon); yakin(m.lat, g.lat);
+  assert.equal(ekrandanKonum(700 + 301, 450, g, 700, 450), null);
+  const o = ortografik(32.86, 39.93, g);
+  const k = ekrandanKonum(700 + 300 * o.x, 450 - 300 * o.y, g, 700, 450);
+  yakin(k.lon, 32.86, 1e-6); yakin(k.lat, 39.93, 1e-6);
+});

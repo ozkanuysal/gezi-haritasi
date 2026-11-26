@@ -180,3 +180,9 @@ test('etkileşimli kürede Türkiye adı: katmanın içinde, her karede konumlan
   assert.match(oku('kure.js'), /const enBuyukR = \(\) => Math\.min\(gen\(\), yuk\(\)\) \* 10;/);
   assert.match(css, /\.kure-turkiye \{[^}]*pointer-events: none/);
 });
+
+test('kürede Türkiye\'ye dokunuş haritayı açar: sınır verisi yüklü, dokunuş denetleniyor', () => {
+  const i = f => html.indexOf(`src="${f}"`);
+  assert.ok(i('turkiye-sinir.js') > 0 && i('turkiye-sinir.js') < i('kure.js'));
+  assert.match(oku('kure.js'), /turkiyeIcindeMi\(k\.lon, k\.lat\)\) kapat\(\)/);
+});

@@ -81,18 +81,28 @@ test('yakinlastir: çarpanla büyür/küçülür, sınırlar içinde kalır', ()
 });
 
 // Kürede Türkiye adı ve adım adım yakınlaşma (2026-11-26)
-const { ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, etiketKonumu } = require('../kure.js');
+const { ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, ILK_ARA_MS, ADIM_MS, ARA_MS, etiketKonumu, etiketOlcegi } = require('../kure.js');
 
-test('açılış: dönüşten sonra 3 adımda yakınlaşır, adımlar arasında durur', () => {
-  assert.equal(ADIM_SAYISI, 3);
+test('açılış: dönüşten sonra 5 adımda, eskisinden hızlı yakınlaşır; adımlar arasında durur', () => {
+  assert.equal(ADIM_SAYISI, 5); // 2026-11-26: 3 → 5 ("2 kere daha")
   assert.equal(ADIM_CARPANI, 1.7);
+  assert.ok(ADIM_MS < 700 && ARA_MS < 350, 'yakınlaşma hızlandı');
+  assert.equal(ACILIS_BITIS, ACILIS_MS + ILK_ARA_MS + ADIM_SAYISI * (ADIM_MS + ARA_MS));
   yakin(acilisGorunumu(ACILIS_MS, 300).R, 300);
-  yakin(acilisGorunumu(ACILIS_BITIS, 300).R, 300 * 1.7 ** 3);
-  yakin(acilisGorunumu(ACILIS_BITIS + 1000, 300).R, 300 * 1.7 ** 3);
-  const birinciAra = [ACILIS_MS + 300 + 700 + 50, ACILIS_MS + 300 + 700 + 300].map(t => acilisGorunumu(t, 300).R);
-  yakin(birinciAra[0], 300 * 1.7); yakin(birinciAra[1], 300 * 1.7);
+  yakin(acilisGorunumu(ACILIS_BITIS, 300).R, 300 * 1.7 ** 5);
+  yakin(acilisGorunumu(ACILIS_BITIS + 1000, 300).R, 300 * 1.7 ** 5);
+  const ara = ACILIS_MS + ILK_ARA_MS + ADIM_MS;
+  for (const t of [ara + 20, ara + ARA_MS - 20]) yakin(acilisGorunumu(t, 300).R, 300 * 1.7);
   let onceki = 0;
-  for (let t = 0; t <= ACILIS_BITIS; t += 50) { const r = acilisGorunumu(t, 300).R; assert.ok(r >= onceki - 1e-9, `t=${t}`); onceki = r; }
+  for (let t = 0; t <= ACILIS_BITIS; t += 25) { const r = acilisGorunumu(t, 300).R; assert.ok(r >= onceki - 1e-9, `t=${t}`); onceki = r; }
+});
+
+test('etiketOlcegi: küre küçükken yazı küçük, büyüdükçe normal boy', () => {
+  assert.equal(etiketOlcegi(100, 900), 0.55);
+  assert.equal(etiketOlcegi(5000, 900), 1);
+  const orta = etiketOlcegi(700, 900);
+  assert.ok(orta > 0.55 && orta < 1, String(orta));
+  assert.ok(etiketOlcegi(800, 900) > orta, 'tekdüze');
 });
 
 test('etiketKonumu: Türkiye ortadayken ekranın ortasında, arka yüzdeyken görünmez', () => {

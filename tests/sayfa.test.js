@@ -176,5 +176,7 @@ test('etkileşimli küre: çıkış simgesi katmanın içinde; Esc, tekerlek ve 
 test('etkileşimli kürede Türkiye adı: katmanın içinde, her karede konumlanır', () => {
   assert.match(html, /<div id="kure"[^>]*>[\s\S]*<div id="kure-turkiye" class="kure-turkiye" hidden>Türkiye<\/div>/);
   assert.match(oku('kure.js'), /etiketKonumu\(gorunum, gen\(\) \/ 2, yuk\(\) \/ 2\)/);
+  assert.match(oku('kure.js'), /scale\(\$\{etiketOlcegi\(gorunum\.R, Math\.min\(gen\(\), yuk\(\)\)\)\}\)/);
+  assert.match(oku('kure.js'), /const enBuyukR = \(\) => Math\.min\(gen\(\), yuk\(\)\) \* 10;/);
   assert.match(css, /\.kure-turkiye \{[^}]*pointer-events: none/);
 });

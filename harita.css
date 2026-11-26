@@ -93,7 +93,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 .il-etiketi.gizli { display: none; }
 .il-noktasi { fill: #002d72; stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
 .il-zemin { fill: #fff; stroke: #002d72; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
-.il-adi { font-size: 12px; font-weight: 700; fill: #002d72; text-anchor: middle; }
+.il-adi { font-size: 12px; font-weight: 700; fill: #002d72; text-anchor: middle; dominant-baseline: central; }
 
 /* İl ekranı: solda ilçe haritası, sağda gezi kartları. */
 .il-ekrani {

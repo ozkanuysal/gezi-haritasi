@@ -1,6 +1,6 @@
 // Haritayı sayfaya bağlar: olayları cekirdek.js'e verir, çıkan durumu ciz() ile çizer.
 (function () {
-  const { bolgeBul, ilAdiSade, sonrakiDurum, kutuBirlestir, ilEkraniMi, hashtenDurum, durumdanHash } = GEZI;
+  const { bolgeBul, ilAdiSade, sonrakiDurum, kutuBirlestir, ilEkraniMi, hashtenDurum, durumdanHash, etiketYeri } = GEZI;
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const GECIS_MS = 500;
 
@@ -93,18 +93,34 @@
 
   // Etiket zeminleri yazının ölçüsüne göre; yazı boyu ekran genişliğiyle değiştiği için
   // etiketler her göründüğünde yeniden ölçülür.
+  // Bölge adlarının zemini yerinde boyutlanır; il etiketleri bölge adlarına (ve birbirine) çarpmayacak
+  // yere konur (etiketYeri: üst, alt, sağ, sol).
   function zeminleriBoyutla() {
-    for (const grup of [...adlar.children, ...ilEtiketleri.children]) {
+    const engeller = [];
+    for (const grup of adlar.children) {
       const zemin = grup.querySelector('rect');
       const yazi = grup.querySelector('text');
       const k = yazi.getBBox();
       if (!k.width) continue; // gizli etiket ölçülemez; görününce yeniden ölçülür
       const fs = parseFloat(getComputedStyle(yazi).fontSize);
-      zemin.setAttribute('x', k.x - fs * .5);
-      zemin.setAttribute('y', k.y - fs * .2);
-      zemin.setAttribute('width', k.width + fs);
-      zemin.setAttribute('height', k.height + fs * .4);
+      const kutu = { x: k.x - fs * .5, y: k.y - fs * .2, width: k.width + fs, height: k.height + fs * .4 };
+      for (const [a, v] of Object.entries(kutu)) zemin.setAttribute(a, v);
       zemin.setAttribute('rx', fs * .45);
+      engeller.push(kutu);
+    }
+    for (const grup of ilEtiketleri.children) {
+      const zemin = grup.querySelector('rect');
+      const yazi = grup.querySelector('text');
+      const k = yazi.getBBox();
+      if (!k.width) continue;
+      const fs = parseFloat(getComputedStyle(yazi).fontSize);
+      const yer = etiketYeri({ x: +grup.dataset.x, y: +grup.dataset.y },
+        { w: k.width + fs, h: k.height + fs * .4 }, fs * .35, engeller);
+      yazi.setAttribute('x', yer.x + yer.width / 2);
+      yazi.setAttribute('y', yer.y + yer.height / 2);
+      for (const a of ['x', 'y', 'width', 'height']) zemin.setAttribute(a, yer[a]);
+      zemin.setAttribute('rx', fs * .45);
+      engeller.push(yer);
     }
   }
   matchMedia('(max-width: 600px)').addEventListener('change', () => zeminleriBoyutla());

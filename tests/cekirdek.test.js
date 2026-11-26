@@ -84,3 +84,19 @@ test('durumdanHash', () => {
 test('projeksiyon', () => {
   assert.deepEqual(projeksiyon(41, 29, { lon0: 28, lat0: 42, kos: 0.75, olcek: 100 }), { x: 75, y: 100 });
 });
+
+// İl etiketi yerleştirme (2026-11-26): bölge adlarıyla çakışmasın
+const { etiketYeri } = require('../cekirdek.js');
+
+test('etiketYeri: üst, doluysa alt, sonra sağ, sol; hepsi doluysa üst', () => {
+  const n = { x: 100, y: 100 }, o = { w: 40, h: 10 };
+  assert.deepEqual(etiketYeri(n, o, 5, []), { yon: 'ust', x: 80, y: 85, width: 40, height: 10 });
+  const ust = { x: 70, y: 80, width: 60, height: 12 };
+  assert.deepEqual(etiketYeri(n, o, 5, [ust]), { yon: 'alt', x: 80, y: 105, width: 40, height: 10 });
+  const alt = { x: 70, y: 106, width: 60, height: 12 };
+  assert.deepEqual(etiketYeri(n, o, 5, [ust, alt]), { yon: 'sag', x: 105, y: 95, width: 40, height: 10 });
+  const sag = { x: 104, y: 90, width: 50, height: 20 };
+  assert.deepEqual(etiketYeri(n, o, 5, [ust, alt, sag]), { yon: 'sol', x: 55, y: 95, width: 40, height: 10 });
+  const sol = { x: 40, y: 90, width: 30, height: 20 };
+  assert.equal(etiketYeri(n, o, 5, [ust, alt, sag, sol]).yon, 'ust');
+});

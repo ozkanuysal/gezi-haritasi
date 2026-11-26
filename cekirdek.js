@@ -69,8 +69,20 @@ const GEZI = (function () {
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
   }
 
+  // İl etiketi için yer: noktanın üstü, altı, sağı, solu; ilk boş olan (hepsi doluysa üst).
+  function etiketYeri(nokta, olcu, bosluk, engeller) {
+    const adaylar = [
+      ['ust', nokta.x - olcu.w / 2, nokta.y - bosluk - olcu.h],
+      ['alt', nokta.x - olcu.w / 2, nokta.y + bosluk],
+      ['sag', nokta.x + bosluk, nokta.y - olcu.h / 2],
+      ['sol', nokta.x - bosluk - olcu.w, nokta.y - olcu.h / 2],
+    ].map(([yon, x, y]) => ({ yon, x, y, width: olcu.w, height: olcu.h }));
+    const cakisir = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+    return adaylar.find(k => !engeller.some(e => cakisir(k, e))) || adaylar[0];
+  }
+
   return {
-    bolgeBul, ilAdiSade, hashtenBolge, sonrakiDurum, kutuBirlestir,
+    bolgeBul, ilAdiSade, hashtenBolge, sonrakiDurum, kutuBirlestir, etiketYeri,
     ilGezileri, ilEkraniMi, hashtenDurum, durumdanHash, projeksiyon,
   };
 })();

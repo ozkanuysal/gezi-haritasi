@@ -33,7 +33,7 @@ fi
 png="$dizin/goruntu-$$.png"
 "$edge" --headless=new --disable-gpu --hide-scrollbars \
   --window-size="$pencere" --virtual-time-budget="${BEKLE:-4000}" \
-  --user-data-dir="$(wslpath -w "$dizin/profil")" \
+  --user-data-dir="$(wslpath -w "$dizin/profil-$$")" \
   --screenshot="$(wslpath -w "$png")" "$url" >/dev/null 2>&1 || true
 
 if [ ! -f "$png" ]; then
@@ -42,5 +42,6 @@ if [ ! -f "$png" ]; then
   [ -f "$sanal" ] && png="$sanal"
 fi
 [ -f "$png" ] || { echo "ekran görüntüsü alınamadı: $url" >&2; exit 1; }
+rm -rf "$dizin/profil-$$" 2>/dev/null || true  # her çekim temiz profil: önbellekten eski sürüm gelmesin
 mv "$png" "$cikti"
 echo "$cikti ($url)"

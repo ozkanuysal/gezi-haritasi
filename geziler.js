@@ -25,7 +25,7 @@ const GEZILER = [
   },
   {
     plaka: 42,
-    mekan: 'Konya Gezisi',
+    mekan: 'Mevlânâ Müzesi', // tabloda "Konya Gezisi"; kullanıcı mekân adını istedi
     tur: 'Şehir dışı',
     hafta: 30, // tabloda "W30"
     sinif: 6,

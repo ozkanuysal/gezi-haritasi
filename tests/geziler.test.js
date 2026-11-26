@@ -25,7 +25,7 @@ test('Santral İstanbul gezisi tablodaki değerlerle', () => {
 
 test('Konya gezisi tablodaki değerlerle', () => {
   const g = GEZILER.find(x => x.plaka === 42);
-  assert.equal(g.mekan, 'Konya Gezisi');
+  assert.equal(g.mekan, 'Mevlânâ Müzesi');
   assert.equal(g.tur, 'Şehir dışı');
   assert.equal(g.hafta, 30);
   assert.equal(g.sinif, 6);

@@ -2,9 +2,11 @@
 // KURE_HESAP saf hesaptır (Node'da test edilir); KURE tarayıcıda çizer ve oynatır.
 const KURE_HESAP = (function () {
   const TURKIYE = { bati: 25.67, dogu: 44.82, guney: 35.82, kuzey: 42.10 };
-  const SURE = 4600; // ms (2026-11-26: 2 sn uzatıldı, dönüş yavaşladı)
-  // Dönüş süresi: açılış küresi ve dünya simgesiyle açılan küre aynı hızda döner (2026-11-26).
+  // Tek akıcı uçuş (2026-11-26): iki küre de kullanır. Dönüş 0–DONUS_MS; yakınlaşma dönüş bitmeden
+  // YAKIN_BAS'ta başlar, YAKIN_BITIS'te biter. Açılış küresi sonunda haritaya geçer, simgeyle açılan durur.
   const DONUS_MS = 2200; // 3400 → 2200: kullanıcı "hızı daha da yükselt" dedi
+  const YAKIN_BAS = 1300, YAKIN_MS = 2200, YAKIN_BITIS = YAKIN_BAS + YAKIN_MS;
+  const SURE = YAKIN_BITIS + 300; // açılış küresi: kayboluş YAKIN_BITIS − 150 … SURE
   const R2D = Math.PI / 180;
   const sinir = x => Math.min(1, Math.max(0, x));
   const yumusak = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -32,17 +34,21 @@ const KURE_HESAP = (function () {
     };
   }
 
-  // t (ms) anındaki görünüm: dönüş 0–3400 ms, yakınlaşma 2400–4300 ms, kayboluş 4150–4600 ms.
+  // Uçuşun t (ms) anındaki ilerlemesi: pd dönüş, py yakınlaşma (0–1, yumuşak).
+  function ucus(t) {
+    return { pd: yumusak(sinir(t / DONUS_MS)), py: yumusak(sinir((t - YAKIN_BAS) / YAKIN_MS)) };
+  }
+
+  // Açılış küresi: uçuş + sonunda haritaya hizalı kayboluş.
   function cizelge(t, bas, son) {
-    const pd = yumusak(sinir(t / DONUS_MS));
-    const py = yumusak(sinir((t - 2400) / 1900));
+    const { pd, py } = ucus(t);
     return {
       lon: son.lon - 150 * (1 - pd),
       lat: 15 + (son.lat - 15) * pd,
       R: bas.R * Math.pow(son.R / bas.R, py),
       cx: bas.cx + (son.cx - bas.cx) * py,
       cy: bas.cy + (son.cy - bas.cy) * py,
-      opaklik: 1 - sinir((t - 4150) / 450),
+      opaklik: 1 - sinir((t - (YAKIN_BITIS - 150)) / 450),
     };
   }
 
@@ -53,21 +59,16 @@ const KURE_HESAP = (function () {
   // Etkileşimli küre (dünya simgesi): döner, Türkiye ortada durur; sürüklenir, yakınlaşır.
   const TURKIYE_MERKEZI = { lon: (TURKIYE.bati + TURKIYE.dogu) / 2, lat: (TURKIYE.guney + TURKIYE.kuzey) / 2 };
   const ACILIS_MS = DONUS_MS;
-  // Dönüşten sonra kısa aralarla adım adım yakınlaşma (2026-11-26: "birkaç kere yakınlaşsın";
-  // sonra "2 kere daha" ve "biraz daha hızlı": 3 → 5 adım, 700/350 → 480/220 → 300/140 ms).
-  const ADIM_SAYISI = 5, ADIM_CARPANI = 1.7, ILK_ARA_MS = 300, ADIM_MS = 300, ARA_MS = 140;
-  const ACILIS_BITIS = ACILIS_MS + ILK_ARA_MS + ADIM_SAYISI * (ADIM_MS + ARA_MS);
+  // Simgeyle açılan küre aynı uçuşla 1,7⁵ kat yaklaşıp durur (önceki 5 adımlı yakınlaşmanın sonu).
+  const YAKINLASMA_KATI = 1.7 ** 5;
+  const ACILIS_BITIS = YAKIN_BITIS;
 
   function acilisGorunumu(t, R) {
-    const e = yumusak(sinir(t / ACILIS_MS));
-    let adim = 0;
-    for (let i = 0; i < ADIM_SAYISI; i++) {
-      adim += yumusak(sinir((t - ACILIS_MS - ILK_ARA_MS - i * (ADIM_MS + ARA_MS)) / ADIM_MS));
-    }
+    const { pd, py } = ucus(t);
     return {
-      lon: TURKIYE_MERKEZI.lon - 150 * (1 - e),
-      lat: 15 + (TURKIYE_MERKEZI.lat - 15) * e,
-      R: R * Math.pow(ADIM_CARPANI, adim),
+      lon: TURKIYE_MERKEZI.lon - 150 * (1 - pd),
+      lat: 15 + (TURKIYE_MERKEZI.lat - 15) * pd,
+      R: R * Math.pow(YAKINLASMA_KATI, py),
     };
   }
 
@@ -123,7 +124,7 @@ const KURE_HESAP = (function () {
   return {
     TURKIYE, SURE, DONUS_MS, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
     TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
-    ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, ILK_ARA_MS, ADIM_MS, ARA_MS, etiketKonumu, etiketOlcegi,
+    YAKIN_BAS, YAKIN_MS, YAKINLASMA_KATI, ACILIS_BITIS, etiketKonumu, etiketOlcegi,
     ekrandanKonum, turkiyeIcindeMi,
   };
 })();

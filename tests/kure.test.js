@@ -7,7 +7,7 @@ const yakin = (a, b, e = 1e-6) => assert.ok(Math.abs(a - b) < e, `${a} ≈ ${b}`
 
 test('Türkiye sınırları ve süre', () => {
   assert.deepEqual(TURKIYE, { bati: 25.67, dogu: 44.82, guney: 35.82, kuzey: 42.10 });
-  assert.equal(SURE, 4600); // 2026-11-26: kullanıcı 2 sn daha uzun ve daha yavaş dönüş istedi
+  assert.equal(SURE, 3800); // 2026-11-26: tek akıcı uçuş (dönüş 0–2200, yakınlaşma 1300–3500, kayboluş 3350–3800)
 });
 
 test('ortografik: merkez (0,0), arka yüz görünmez', () => {
@@ -37,7 +37,7 @@ test('cizelge: başlangıç, bitiş, tekdüze yakınlaşma', () => {
   yakin(e.lon, son.lon); yakin(e.lat, son.lat); yakin(e.R, 4000); yakin(e.cx, 650); yakin(e.cy, 420);
   assert.equal(e.opaklik, 0);
   assert.equal(cizelge(2000, bas, son).opaklik, 1);
-  assert.equal(cizelge(4100, bas, son).opaklik, 1);
+  assert.equal(cizelge(3300, bas, son).opaklik, 1);
   // Dönüş ortak sürenin (DONUS_MS) sonunda tamamlanır; hız isteğe göre değişti (yavaşlat → hızlandır).
   yakin(cizelge(require('../kure.js').DONUS_MS, bas, son).lon, son.lon);
   let onceki = 0;
@@ -56,12 +56,12 @@ test('oynatilsinMi: yalnızca ana sayfa, hareket serbest ve WebGL varken', () =>
 // Etkileşimli küre (dünya simgesi, 2026-11-26): döner, Türkiye'de durur, sürüklenir, yakınlaşır
 const { TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir } = require('../kure.js');
 
-test('acilisGorunumu: başta 150° batıda, sonda Türkiye ortada; yarıçap sabit', () => {
+test('acilisGorunumu: başta 150° batıda, sonda Türkiye ortada', () => {
   assert.deepEqual(TURKIYE_MERKEZI, MERKEZ);
   const b = acilisGorunumu(0, 300);
   yakin(b.lon, MERKEZ.lon - 150); yakin(b.lat, 15); assert.equal(b.R, 300);
   const s = acilisGorunumu(ACILIS_MS + 100, 300);
-  yakin(s.lon, MERKEZ.lon); yakin(s.lat, MERKEZ.lat); assert.equal(s.R, 300);
+  yakin(s.lon, MERKEZ.lon); yakin(s.lat, MERKEZ.lat);
 });
 
 test('surukle: sağa sürükleyince batıya, aşağı sürükleyince kuzeye bakar; enlem ±85, boylam sarılır', () => {
@@ -81,20 +81,25 @@ test('yakinlastir: çarpanla büyür/küçülür, sınırlar içinde kalır', ()
 });
 
 // Kürede Türkiye adı ve adım adım yakınlaşma (2026-11-26)
-const { ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, ILK_ARA_MS, ADIM_MS, ARA_MS, etiketKonumu, etiketOlcegi } = require('../kure.js');
+const { YAKINLASMA_KATI, YAKIN_BAS, ACILIS_BITIS, etiketKonumu, etiketOlcegi } = require('../kure.js');
 
-test('açılış: dönüşten sonra 5 adımda, eskisinden hızlı yakınlaşır; adımlar arasında durur', () => {
-  assert.equal(ADIM_SAYISI, 5); // 2026-11-26: 3 → 5 ("2 kere daha")
-  assert.equal(ADIM_CARPANI, 1.7);
-  assert.ok(ADIM_MS < 480 && ARA_MS < 220, 'yakınlaşma hızlandı (2026-11-26: ikinci kez)');
-  assert.equal(ACILIS_BITIS, ACILIS_MS + ILK_ARA_MS + ADIM_SAYISI * (ADIM_MS + ARA_MS));
-  yakin(acilisGorunumu(ACILIS_MS, 300).R, 300);
+test('simgeyle açılan küre: dönüş bitmeden başlayan tek akıcı yakınlaşma, duraklama yok', () => {
+  const { DONUS_MS } = require('../kure.js');
+  yakin(YAKINLASMA_KATI, 1.7 ** 5); // son yakınlık eskisiyle aynı
+  assert.ok(YAKIN_BAS < DONUS_MS, 'yakınlaşma dönüş bitmeden başlar');
+  yakin(acilisGorunumu(YAKIN_BAS, 300).R, 300);
   yakin(acilisGorunumu(ACILIS_BITIS, 300).R, 300 * 1.7 ** 5);
   yakin(acilisGorunumu(ACILIS_BITIS + 1000, 300).R, 300 * 1.7 ** 5);
-  const ara = ACILIS_MS + ILK_ARA_MS + ADIM_MS;
-  for (const t of [ara + 20, ara + ARA_MS - 20]) yakin(acilisGorunumu(t, 300).R, 300 * 1.7);
-  let onceki = 0;
-  for (let t = 0; t <= ACILIS_BITIS; t += 25) { const r = acilisGorunumu(t, 300).R; assert.ok(r >= onceki - 1e-9, `t=${t}`); onceki = r; }
+  // Yakınlaşma boyunca hiç durmaz: her 40 ms'de yarıçap büyür.
+  for (let t = YAKIN_BAS + 40; t < ACILIS_BITIS; t += 40) {
+    assert.ok(acilisGorunumu(t, 300).R > acilisGorunumu(t - 40, 300).R + 1e-9, `t=${t}`);
+  }
+});
+
+test('iki küre aynı uçuşu kullanır: yakınlaşma oranı her anda aynı', () => {
+  const son = { R: 300 * 1.7 ** 5, cx: 700, cy: 450, lon: TURKIYE_MERKEZI.lon, lat: TURKIYE_MERKEZI.lat };
+  const bas = { R: 300, cx: 700, cy: 450 };
+  for (const t of [0, 1000, 1500, 2200, 2800, 3400]) yakin(cizelge(t, bas, son).R, acilisGorunumu(t, 300).R, 1e-6);
 });
 
 test('etiketOlcegi: küre küçükken yazı küçük, büyüdükçe normal boy', () => {

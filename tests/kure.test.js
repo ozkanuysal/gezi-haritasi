@@ -79,3 +79,26 @@ test('yakinlastir: çarpanla büyür/küçülür, sınırlar içinde kalır', ()
   assert.equal(yakinlastir({ lon: 1, lat: 2, R: 100 }, 0.1, 50, 400).R, 50);
   assert.deepEqual([yakinlastir({ lon: 1, lat: 2, R: 100 }, 2, 50, 400).lon, yakinlastir({ lon: 1, lat: 2, R: 100 }, 2, 50, 400).lat], [1, 2]);
 });
+
+// Kürede Türkiye adı ve adım adım yakınlaşma (2026-11-26)
+const { ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, etiketKonumu } = require('../kure.js');
+
+test('açılış: dönüşten sonra 3 adımda yakınlaşır, adımlar arasında durur', () => {
+  assert.equal(ADIM_SAYISI, 3);
+  assert.equal(ADIM_CARPANI, 1.7);
+  yakin(acilisGorunumu(ACILIS_MS, 300).R, 300);
+  yakin(acilisGorunumu(ACILIS_BITIS, 300).R, 300 * 1.7 ** 3);
+  yakin(acilisGorunumu(ACILIS_BITIS + 1000, 300).R, 300 * 1.7 ** 3);
+  const birinciAra = [ACILIS_MS + 300 + 700 + 50, ACILIS_MS + 300 + 700 + 300].map(t => acilisGorunumu(t, 300).R);
+  yakin(birinciAra[0], 300 * 1.7); yakin(birinciAra[1], 300 * 1.7);
+  let onceki = 0;
+  for (let t = 0; t <= ACILIS_BITIS; t += 50) { const r = acilisGorunumu(t, 300).R; assert.ok(r >= onceki - 1e-9, `t=${t}`); onceki = r; }
+});
+
+test('etiketKonumu: Türkiye ortadayken ekranın ortasında, arka yüzdeyken görünmez', () => {
+  const m = etiketKonumu({ lon: TURKIYE_MERKEZI.lon, lat: TURKIYE_MERKEZI.lat, R: 300 }, 700, 450);
+  yakin(m.x, 700); yakin(m.y, 450); assert.equal(m.gorunur, true);
+  assert.equal(etiketKonumu({ lon: TURKIYE_MERKEZI.lon + 180, lat: -TURKIYE_MERKEZI.lat, R: 300 }, 700, 450).gorunur, false);
+  const dogu = etiketKonumu({ lon: TURKIYE_MERKEZI.lon - 20, lat: TURKIYE_MERKEZI.lat, R: 300 }, 700, 450);
+  assert.ok(dogu.x > 700, 'bakış batıdayken Türkiye sağda');
+});

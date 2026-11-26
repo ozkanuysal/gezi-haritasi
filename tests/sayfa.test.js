@@ -172,3 +172,9 @@ test('etkileşimli küre: çıkış simgesi katmanın içinde; Esc, tekerlek ve 
   assert.match(k, /addEventListener\('pointerdown'/);
   assert.match(css, /\.kure\.etkilesimli \{[^}]*touch-action: none/);
 });
+
+test('etkileşimli kürede Türkiye adı: katmanın içinde, her karede konumlanır', () => {
+  assert.match(html, /<div id="kure"[^>]*>[\s\S]*<div id="kure-turkiye" class="kure-turkiye" hidden>Türkiye<\/div>/);
+  assert.match(oku('kure.js'), /etiketKonumu\(gorunum, gen\(\) \/ 2, yuk\(\) \/ 2\)/);
+  assert.match(css, /\.kure-turkiye \{[^}]*pointer-events: none/);
+});

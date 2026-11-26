@@ -51,6 +51,13 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
 }
 .kure-cik[hidden] { display: none; }
+.kure-turkiye {
+  position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none;
+  padding: 4px 14px; border-radius: 999px; white-space: nowrap;
+  background: rgba(0, 45, 114, .92); color: #fff;
+  font-size: 1.05rem; font-weight: 700; letter-spacing: .03em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .45);
+}
 
 @keyframes belir { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 

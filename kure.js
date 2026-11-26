@@ -51,10 +51,27 @@ const KURE_HESAP = (function () {
   // Etkileşimli küre (dünya simgesi): döner, Türkiye ortada durur; sürüklenir, yakınlaşır.
   const TURKIYE_MERKEZI = { lon: (TURKIYE.bati + TURKIYE.dogu) / 2, lat: (TURKIYE.guney + TURKIYE.kuzey) / 2 };
   const ACILIS_MS = 2400;
+  // Dönüşten sonra kısa aralarla adım adım yakınlaşma (2026-11-26: "birkaç kere yakınlaşsın").
+  const ADIM_SAYISI = 3, ADIM_CARPANI = 1.7, ILK_ARA_MS = 300, ADIM_MS = 700, ARA_MS = 350;
+  const ACILIS_BITIS = ACILIS_MS + ILK_ARA_MS + ADIM_SAYISI * (ADIM_MS + ARA_MS);
 
   function acilisGorunumu(t, R) {
     const e = yumusak(sinir(t / ACILIS_MS));
-    return { lon: TURKIYE_MERKEZI.lon - 150 * (1 - e), lat: 15 + (TURKIYE_MERKEZI.lat - 15) * e, R };
+    let adim = 0;
+    for (let i = 0; i < ADIM_SAYISI; i++) {
+      adim += yumusak(sinir((t - ACILIS_MS - ILK_ARA_MS - i * (ADIM_MS + ARA_MS)) / ADIM_MS));
+    }
+    return {
+      lon: TURKIYE_MERKEZI.lon - 150 * (1 - e),
+      lat: 15 + (TURKIYE_MERKEZI.lat - 15) * e,
+      R: R * Math.pow(ADIM_CARPANI, adim),
+    };
+  }
+
+  // Kürede "Türkiye" yazısının ekrandaki yeri; Türkiye arka yüzdeyse görünmez.
+  function etiketKonumu(g, cx, cy) {
+    const o = ortografik(TURKIYE_MERKEZI.lon, TURKIYE_MERKEZI.lat, { lon: g.lon, lat: g.lat });
+    return { x: cx + g.R * o.x, y: cy - g.R * o.y, gorunur: o.gorunur };
   }
 
   // Parmağın altındaki yer parmakla birlikte gider: sağa sürükleyince bakış batıya, aşağı sürükleyince kuzeye.
@@ -74,6 +91,7 @@ const KURE_HESAP = (function () {
   return {
     TURKIYE, SURE, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
     TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
+    ADIM_SAYISI, ADIM_CARPANI, ACILIS_BITIS, etiketKonumu,
   };
 })();
 
@@ -83,11 +101,12 @@ if (typeof module === 'object') module.exports = KURE_HESAP;
 // Türkiye görünümündeki dünya simgesiyle yeniden oynatılabilir. Bitince katman gizlenir (silinmez).
 const KURE = (function () {
   if (typeof document === 'undefined') return null;
-  const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_MS, acilisGorunumu, surukle, yakinlastir } = KURE_HESAP;
+  const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_BITIS, acilisGorunumu, surukle, yakinlastir, etiketKonumu } = KURE_HESAP;
   const katman = document.getElementById('kure');
   const tuval = document.getElementById('kure-tuval');
   const yildizTuval = document.getElementById('kure-yildiz');
   const cik = document.getElementById('kureden-cik');
+  const turkiyeEtiketi = document.getElementById('kure-turkiye');
   const gizle = () => { katman.hidden = true; katman.style.transition = ''; katman.style.opacity = ''; };
 
   let gl = null;
@@ -298,14 +317,17 @@ void main() {
         try {
           boyutla();
           const t = simdi - t0;
-          // Açılış dönüşü; kullanıcı dokununca o anda durur.
-          if (!kullanici && (gorunum === null || t <= ACILIS_MS + 50)) {
+          // Açılış dönüşü ve adım adım yakınlaşma; kullanıcı dokununca o anda durur.
+          if (!kullanici && (gorunum === null || t <= ACILIS_BITIS + 50)) {
             gorunum = acilisGorunumu(t, Math.min(gen(), yuk()) * 0.4);
           } else if (!isaretciler.size && (Math.abs(hiz.x) > 0.05 || Math.abs(hiz.y) > 0.05)) {
             gorunum = surukle(gorunum, hiz.x, hiz.y); // bırakınca yavaşlayarak kayar
             hiz = { x: hiz.x * 0.92, y: hiz.y * 0.92 };
           }
           ciz({ lon: gorunum.lon, lat: gorunum.lat, R: gorunum.R, cx: gen() / 2, cy: yuk() / 2 });
+          const e = etiketKonumu(gorunum, gen() / 2, yuk() / 2);
+          turkiyeEtiketi.hidden = !e.gorunur;
+          turkiyeEtiketi.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%)`;
         } catch (e) { return kapat(); }
         requestAnimationFrame(kare);
       })(t0);
@@ -317,6 +339,7 @@ void main() {
     etkilesimli = false;
     isaretciler.clear();
     cik.hidden = true;
+    turkiyeEtiketi.hidden = true;
     katman.classList.remove('etkilesimli');
     bitir(true);
   }

@@ -178,3 +178,8 @@ test('gecisGorunumu: başta g0, sonda g1; boylam kısa yoldan, yarıçap logarit
   const k = gecisGorunumu({ lon: 170, lat: 0, R: 100 }, { lon: -170, lat: 0, R: 100 }, 450, 900);
   assert.ok(Math.abs(Math.abs(k.lon) - 180) < 1e-9, `kısa yol 180'den geçer: ${k.lon}`);
 });
+
+test('ulkeyeYakinlas: ülkenin ortasına, kısa kenarın 6 katı yarıçapla', () => {
+  const { ulkeyeYakinlas } = require('../kure.js');
+  assert.deepEqual(ulkeyeYakinlas({ konum: { enlem: 51.2, boylam: 10.4 } }, 900), { lon: 10.4, lat: 51.2, R: 5400 });
+});

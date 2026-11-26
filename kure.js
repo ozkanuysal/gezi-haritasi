@@ -118,6 +118,11 @@ const KURE_HESAP = (function () {
     return { lon: ort(ulkeler.map(u => u.konum.boylam)), lat: ort(ulkeler.map(u => u.konum.enlem)) };
   }
 
+  // Ülke işaretine tıklayınca bakılacak yer: ülkenin ortası, ülke ekranı dolduracak kadar yakın.
+  function ulkeyeYakinlas(ulke, kisaKenar) {
+    return { lon: ulke.konum.boylam, lat: ulke.konum.enlem, R: kisaKenar * 6 };
+  }
+
   // Karta tıklayınca: g0'dan g1'e yumuşak geçiş (boylam kısa yoldan, yarıçap logaritmik).
   function gecisGorunumu(g0, g1, t, sure) {
     const e = yumusak(sinir(t / sure));
@@ -148,7 +153,7 @@ const KURE_HESAP = (function () {
     TURKIYE, SURE, DONUS_MS, ortografik, turkiyeyeOturt, cizelge, oynatilsinMi,
     TURKIYE_MERKEZI, ACILIS_MS, acilisGorunumu, surukle, yakinlastir,
     YAKIN_BAS, YAKIN_MS, YAKINLASMA_KATI, ACILIS_BITIS, etiketKonumu, etiketOlcegi,
-    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu,
+    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu, ulkeyeYakinlas,
   };
 })();
 
@@ -159,7 +164,7 @@ if (typeof module === 'object') module.exports = KURE_HESAP;
 const KURE = (function () {
   if (typeof document === 'undefined') return null;
   const { SURE, cizelge, turkiyeyeOturt, oynatilsinMi, ACILIS_BITIS, acilisGorunumu, surukle, yakinlastir, etiketKonumu, etiketOlcegi,
-    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu } = KURE_HESAP;
+    ekrandanKonum, turkiyeIcindeMi, noktaKonumu, gezininMerkezi, gecisGorunumu, ulkeyeYakinlas } = KURE_HESAP;
   const katman = document.getElementById('kure');
   const tuval = document.getElementById('kure-tuval');
   const yildizTuval = document.getElementById('kure-yildiz');
@@ -363,6 +368,7 @@ void main() {
   // Soldaki menü (yurt dışı geziler, yurtdisi.js) ve kürede ülke işaretleri.
   const yurtdisi = typeof YURTDISI_GEZILER !== 'undefined' ? YURTDISI_GEZILER : [];
   const isaretler = [];
+  const acikUlkeler = new Set(); // şehir noktaları açık ülkeler
   function el(ad, sinif, metin) {
     const e = document.createElement(ad);
     if (sinif) e.className = sinif;
@@ -408,11 +414,27 @@ void main() {
     menuListe.appendChild(kart);
     for (const u of g.ulkeler) {
       if (isaretler.some(i => i.ad === u.ad)) continue;
-      const isaret = el('div', `kure-isaret kure-isaret--${u.yon}`);
+      const isaret = el('div', `kure-isaret kure-isaret--ulke kure-isaret--${u.yon}`);
       isaret.hidden = true;
-      isaret.append(el('span', 'kure-isaret-nokta'), el('span', 'kure-isaret-ad', u.sehir || u.ad));
+      isaret.append(el('span', 'kure-isaret-nokta'), el('span', 'kure-isaret-ad', u.ad));
+      // Ülkeye tıklayınca: şehir noktaları açılır ve küre ülkeye yaklaşır; yeniden tıklayınca kapanır.
+      isaret.addEventListener('click', e => {
+        e.stopPropagation();
+        if (acikUlkeler.has(u.ad)) { acikUlkeler.delete(u.ad); return; }
+        acikUlkeler.add(u.ad);
+        if (!gorunum) return;
+        kullanici = true; hiz = { x: 0, y: 0 };
+        ucusHedefi = { g0: gorunum, g1: ulkeyeYakinlas(u, Math.min(gen(), yuk())), t0: performance.now() };
+      });
       katman.appendChild(isaret);
       isaretler.push({ ad: u.ad, lon: u.konum.boylam, lat: u.konum.enlem, el: isaret });
+      for (const s of u.sehirler || []) {
+        const si = el('div', `kure-isaret kure-isaret--sehir kure-isaret--${s.yon || 'sag'}`);
+        si.hidden = true;
+        si.append(el('span', 'kure-isaret-nokta'), el('span', 'kure-isaret-ad', s.ad));
+        katman.appendChild(si);
+        isaretler.push({ ad: s.ad, ulke: u.ad, lon: s.konum.boylam, lat: s.konum.enlem, el: si });
+      }
     }
   }
   menuDugme.addEventListener('click', () => {
@@ -472,7 +494,7 @@ void main() {
           turkiyeEtiketi.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%) scale(${olcek})`;
           for (const i of isaretler) {
             const p = noktaKonumu(i.lon, i.lat, gorunum, cx, cy);
-            i.el.hidden = !p.gorunur;
+            i.el.hidden = !p.gorunur || (i.ulke && !acikUlkeler.has(i.ulke));
             i.el.style.transform = `translate(${p.x}px, ${p.y}px) scale(${olcek})`;
           }
         } catch (e) { return kapat(); }
@@ -489,6 +511,7 @@ void main() {
     turkiyeEtiketi.hidden = true;
     menu.hidden = true;
     for (const i of isaretler) i.el.hidden = true;
+    acikUlkeler.clear();
     ucusHedefi = null;
     katman.classList.remove('etkilesimli');
     bitir(true);
@@ -497,7 +520,7 @@ void main() {
   cik.addEventListener('click', e => { e.stopPropagation(); kapat(); });
   document.addEventListener('keydown', e => { if (etkilesimli && e.key === 'Escape') kapat(); });
   katman.addEventListener('pointerdown', e => {
-    if (!etkilesimli || cik.contains(e.target) || menu.contains(e.target)) return;
+    if (!etkilesimli || cik.contains(e.target) || menu.contains(e.target) || e.target.closest('.kure-isaret--ulke')) return;
     ucusHedefi = null;
     katman.setPointerCapture(e.pointerId);
     isaretciler.set(e.pointerId, { x: e.clientX, y: e.clientY });

@@ -90,6 +90,13 @@ body {
 }
 .kure-isaret--sag .kure-isaret-ad { left: 12px; }
 .kure-isaret--sol .kure-isaret-ad { right: 12px; }
+.kure-isaret--ust .kure-isaret-ad { top: auto; bottom: 12px; left: 50%; transform: translateX(-50%); }
+/* Ülke işareti tıklanır: şehir noktalarını açar/kapatır. Şehir işareti küçük ve ters renkli. */
+.kure-isaret--ulke .kure-isaret-ad, .kure-isaret--ulke .kure-isaret-nokta { pointer-events: auto; cursor: pointer; }
+.kure-isaret--sehir .kure-isaret-nokta { left: -5px; top: -5px; width: 10px; height: 10px; background: #fff; border-color: #002d72; }
+.kure-isaret--sehir .kure-isaret-ad { top: -11px; padding: 2px 8px; font-size: .78rem; background: #002d72; color: #fff; }
+.kure-isaret--sehir.kure-isaret--sag .kure-isaret-ad { left: 10px; }
+.kure-isaret--sehir.kure-isaret--sol .kure-isaret-ad { right: 10px; }
 
 .kure-turkiye {
   position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none;

@@ -203,7 +203,13 @@ test('kürede sol menü: yurt dışı geziler kartı ve ülke işaretleri', () =
   const k = oku('kure.js');
   assert.match(k, /YURTDISI_GEZILER/);
   assert.match(k, /kure-isaret/);
-  assert.match(k, /el\('span', 'kure-isaret-ad', u\.sehir \|\| u\.ad\)/); // işarette şehir adı (2026-11-26)
+  // Ülke etiketi tıklanınca şehir noktaları açılır/kapanır ve küre ülkeye yaklaşır (2026-11-26).
+  assert.match(k, /kure-isaret--ulke/);
+  assert.match(k, /kure-isaret--sehir/);
+  assert.match(k, /acikUlkeler\.(has|add|delete)\(/);
+  assert.match(k, /ulkeyeYakinlas\(/);
+  assert.match(css, /\.kure-isaret--ust \.kure-isaret-ad \{/);
+  assert.match(css, /\.kure-isaret--ulke \.kure-isaret-ad[^{]*\{[^}]*pointer-events: auto/);
   assert.match(k, /gecisGorunumu\(/);
   assert.match(css, /\.kure-menu \{/);
 });

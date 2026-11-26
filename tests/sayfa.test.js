@@ -81,3 +81,8 @@ test('ciz: harita görünür yapılmadan etiket zeminleri ölçülmez (il ekran�
   const olcum = govde.indexOf('zeminleriBoyutla()');
   assert.ok(gorunur > 0 && olcum > 0 && gorunur < olcum, `görünürlük ${gorunur}, ölçüm ${olcum}`);
 });
+
+test('başlık: Açı Schools 2026-2027 Gezi Haritası', () => {
+  assert.match(html, /<h1>Açı Schools 2026-2027 Gezi Haritası<\/h1>/);
+  assert.match(html, /<title>Açı Schools 2026-2027 Gezi Haritası<\/title>/);
+});

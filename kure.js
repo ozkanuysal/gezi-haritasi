@@ -52,8 +52,8 @@ const KURE_HESAP = (function () {
   const TURKIYE_MERKEZI = { lon: (TURKIYE.bati + TURKIYE.dogu) / 2, lat: (TURKIYE.guney + TURKIYE.kuzey) / 2 };
   const ACILIS_MS = 2400;
   // Dönüşten sonra kısa aralarla adım adım yakınlaşma (2026-11-26: "birkaç kere yakınlaşsın";
-  // sonra "2 kere daha" ve "biraz daha hızlı": 3 → 5 adım, 700/350 → 480/220 ms).
-  const ADIM_SAYISI = 5, ADIM_CARPANI = 1.7, ILK_ARA_MS = 300, ADIM_MS = 480, ARA_MS = 220;
+  // sonra "2 kere daha" ve "biraz daha hızlı": 3 → 5 adım, 700/350 → 480/220 → 300/140 ms).
+  const ADIM_SAYISI = 5, ADIM_CARPANI = 1.7, ILK_ARA_MS = 300, ADIM_MS = 300, ARA_MS = 140;
   const ACILIS_BITIS = ACILIS_MS + ILK_ARA_MS + ADIM_SAYISI * (ADIM_MS + ARA_MS);
 
   function acilisGorunumu(t, R) {

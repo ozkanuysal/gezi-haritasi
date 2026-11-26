@@ -193,7 +193,8 @@ test('sayfada artık "Açı Schools" yok, "Açı Okulları" var (2026-11-26)', (
   const tam = oku('index.html');
   assert.ok(!tam.includes('Açı Schools'));
   assert.match(tam, /aria-label="Açı Okulları"/);
-  assert.match(tam, /<p class="acilis-yazi">Açı Okulları<\/p>/);
+  // 2026-11-26: yazı, kullanıcının indirdiği kurumsal görseldeki "AÇI OKULLARI" satırı (yazı tipi birebir)
+  assert.match(tam, /<img class="acilis-yazi" src="gorseller\/aci-okullari-yazi\.png" alt="Açı Okulları"/);
 });
 
 test('kürede sol menü: yurt dışı geziler kartı ve ülke işaretleri', () => {

@@ -106,7 +106,6 @@
   // Olaylar
   svg.addEventListener('click', e => {
     const g = e.target.closest('g[data-bolge]');
-    if (e.pointerType === 'touch') etiket.hidden = true;
     if (g) uygula({ tur: 'tik', plaka: Number(g.dataset.plakakodu) });
   });
   geri.addEventListener('click', () => uygula({ tur: 'geri' }));
@@ -114,8 +113,10 @@
     if (hashtenBolge(location.hash) !== durum.bolge) uygula({ tur: 'hash', hash: location.hash });
   });
 
+  // Fare yazısı ve bölge vurgusu yalnızca fareyle: dokunmada ekranda takılı kalmasın.
   let uzerindeki = null;
-  svg.addEventListener('mouseover', e => {
+  svg.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
     const g = e.target.closest('g[data-bolge]');
     if (!g) return;
     const id = g.dataset.bolge;
@@ -128,16 +129,18 @@
       uzerindeki = id;
     }
   });
-  svg.addEventListener('mousemove', e => {
+  svg.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
     etiket.style.left = `${e.clientX}px`;
     etiket.style.top = `${e.clientY + 22}px`;
   });
-  svg.addEventListener('mouseleave', () => {
+  svg.addEventListener('pointerleave', () => {
     etiket.hidden = true;
     bolgeVurgula(uzerindeki, false);
     uzerindeki = null;
   });
-  svg.addEventListener('mouseout', e => {
+  svg.addEventListener('pointerout', e => {
+    if (e.pointerType !== 'mouse') return;
     if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('g[data-bolge]')) etiket.hidden = true;
   });
 

@@ -21,7 +21,7 @@ body {
 main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
 .arac-cubugu {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
   min-height: 48px; margin: 8px 0;
 }
 .arac-cubugu h2 { margin: 0; font-size: 1.25rem; }
@@ -31,11 +31,11 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   border: 1px solid var(--kenar); background: #fff; color: var(--yazi);
   cursor: pointer;
 }
-#geri:hover { background: #f0ede4; }
 
 .harita svg {
   display: block; width: 100%; height: auto;
   aspect-ratio: 1007.478 / 527.323;
+  max-height: calc(100vh - 200px);
 }
 
 #svg-turkiye-haritasi g[data-bolge] path {
@@ -45,8 +45,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   cursor: pointer;
   transition: opacity .3s, filter .2s;
 }
-#svg-turkiye-haritasi g.uzerinde path,
-#svg-turkiye-haritasi.bolge-acik g[data-bolge]:hover path { filter: brightness(.85); }
+#svg-turkiye-haritasi g.uzerinde path { filter: brightness(.85); }
 #svg-turkiye-haritasi g.soluk path { opacity: .25; }
 #svg-turkiye-haritasi g.secili path {
   stroke: var(--yazi); stroke-width: 2.5px;
@@ -67,7 +66,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
 .kart {
   display: inline-flex; flex-direction: column; gap: 2px;
-  margin: 12px 0; padding: 12px 18px;
+  margin-left: auto; padding: 8px 16px;
   background: #fff; border: 1px solid var(--kenar); border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
 }
@@ -87,6 +86,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   padding: 24px 16px;
 }
 .alt a { color: inherit; }
+
+/* Yalnızca gerçek hover olan cihazlarda: dokunmatikte vurgu takılı kalmasın. */
+@media (hover: hover) {
+  #geri:hover { background: #f0ede4; }
+  #svg-turkiye-haritasi.bolge-acik g[data-bolge]:hover path { filter: brightness(.85); }
+}
 
 @media (max-width: 600px) {
   .ust h1 { font-size: 1.6rem; }

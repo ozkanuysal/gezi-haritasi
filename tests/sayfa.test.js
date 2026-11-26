@@ -46,3 +46,11 @@ test('bölge adları beyaz kenarsız, koyu ve kalın', () => {
   assert.match(kural, /font-weight: 800/);
   assert.match(kural, /fill: #002d72/);
 });
+
+test('sayfanın kullandığı görseller git\'te izleniyor (yayına gidiyor)', () => {
+  const { execFileSync } = require('node:child_process');
+  const izlenen = execFileSync('git', ['ls-files'], { cwd: path.join(__dirname, '..'), encoding: 'utf8' }).split('\n');
+  for (const [, src] of oku('index.html').matchAll(/src="([^"]+\.(?:png|jpe?g|svg|webp))"/g)) {
+    assert.ok(izlenen.includes(src), `${src} git'te yok`);
+  }
+});

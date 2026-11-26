@@ -1,2 +1,4 @@
 .superpowers/
+# ekran görüntüleri; sayfanın görselleri hariç
 *.png
+!gorseller/*.png

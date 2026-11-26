@@ -28,7 +28,7 @@ Esin: Gelişim Dünyam'ın açılış küresi (o küre noktalardan yapılmış; 
 - Projeksiyon: ortografik (gerçek küre görünümü), basit güneş ışığı ve ince atmosfer halesi.
 - Türkiye sınırları (hizalama için): 25,67°D–44,82°D, 35,82°K–42,10°K.
 - Doku dosyaları `gorseller/dunya.jpg` (4096×2048) ve `gorseller/turkiye-uydu.jpg` (20°D–50°D,
-  33°K–45°K kırpıntısı).
+  30°K–45°K kırpıntısı).
 - `file://` ile açılan sayfada tarayıcı WebGL'e yerel resmi vermeyebilir; o zaman küre atlanır.
 
 ## Doğrulama
